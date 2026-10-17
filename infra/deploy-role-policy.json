@@ -1,0 +1,36 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AssumeCdkDeploymentRoles",
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws:iam::<ACCOUNT_ID>:role/cdk-hnb659fds-*-<ACCOUNT_ID>-<REGION>"
+    },
+    {
+      "Sid": "ReadCdkBootstrapVersion",
+      "Effect": "Allow",
+      "Action": ["ssm:GetParameter", "ssm:GetParameters"],
+      "Resource": "arn:aws:ssm:<REGION>:<ACCOUNT_ID>:parameter/cdk-bootstrap/hnb659fds/version"
+    },
+    {
+      "Sid": "PublishAdminSpa",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::carnaghan.com/admin/*"
+    },
+    {
+      "Sid": "ListSiteBucketForSync",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::carnaghan.com",
+      "Condition": { "StringLike": { "s3:prefix": ["admin/*"] } }
+    },
+    {
+      "Sid": "InvalidateAdminCache",
+      "Effect": "Allow",
+      "Action": ["cloudfront:ListDistributions", "cloudfront:CreateInvalidation"],
+      "Resource": "*"
+    }
+  ]
+}

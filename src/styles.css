@@ -1,0 +1,51 @@
+.clickable-tag,
+.clickable-tag * {
+  cursor: pointer !important;
+}
+
+/**
+ * Landing-page prose: hand vertical spacing back to the layout.
+ *
+ * The components these blocks replaced rendered a paragraph as Cloudscape's
+ * `<Box variant="p">`, so the `<p>` itself carried the `p-variant` class, which
+ * normalises its margins — all the gap between sections came from `SpaceBetween`.
+ *
+ * Markdown produces a bare `<p>` with no class, which keeps the browser's default
+ * `margin-block` and so adds to the `SpaceBetween` gap. Left alone, every prose block
+ * sits about one paragraph-margin lower than the markup it replaced, and the effect
+ * repeats per block.
+ *
+ * Collapsing only the first and last child keeps the spacing *between* paragraphs
+ * inside a block, which is what makes multi-paragraph prose readable — only the outer
+ * edges are surrendered to the layout.
+ */
+/**
+ * Make markdown paragraphs match the Cloudscape markup they replaced.
+ *
+ * The landing pages used to render each paragraph as `<Box variant="p">`, stacked by
+ * `SpaceBetween`. Markdown instead emits bare `<p>` elements, which carry the browser's
+ * own margins and no padding. Two separate corrections, both measured in Chrome against
+ * the original components rather than reasoned about:
+ *
+ *   padding       `Box variant="p"` applies `padding: 4px 0`, making the old paragraph
+ *                 48px tall where a bare `<p>` is 40px. Without this every converted
+ *                 page sat 8px high.
+ *
+ *   margin        The browser default left 14px between stacked paragraphs where
+ *                 `SpaceBetween size="s"` gives 12px. Small per paragraph, but it
+ *                 accumulated to 14px by the foot of `/about`. Set explicitly rather
+ *                 than zeroed at the edges, which is what an earlier version did — and
+ *                 that version turned out to change nothing at all, because the gap was
+ *                 never coming from the first or last child.
+ *
+ * Line-height needs no rule: the `<p>` inherits 20px from the enclosing Box either way.
+ * That was checked before assuming otherwise.
+ */
+.landing-prose p {
+  margin-block: 0;
+  padding-block: 4px;
+}
+
+.landing-prose p + p {
+  margin-block-start: var(--space-scaled-s-8ozaad, 12px);
+}

@@ -1,0 +1,39 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "WriteContentProjection",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::carnaghan.com/content/*"
+    },
+    {
+      "Sid": "WriteDerivedIndexFiles",
+      "Effect": "Allow",
+      "Action": "s3:PutObject",
+      "Resource": [
+        "arn:aws:s3:::carnaghan.com/search-index.json",
+        "arn:aws:s3:::carnaghan.com/rss.xml",
+        "arn:aws:s3:::carnaghan.com/sitemap.xml",
+        "arn:aws:s3:::carnaghan.com/robots.txt"
+      ]
+    },
+    {
+      "Sid": "ListBucketForSync",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::carnaghan.com",
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": ["content/*", "search-index.json", "rss.xml", "sitemap.xml", "robots.txt"]
+        }
+      }
+    },
+    {
+      "Sid": "InvalidateContentCache",
+      "Effect": "Allow",
+      "Action": ["cloudfront:ListDistributions", "cloudfront:CreateInvalidation"],
+      "Resource": "*"
+    }
+  ]
+}

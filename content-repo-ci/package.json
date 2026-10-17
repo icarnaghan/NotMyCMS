@@ -1,0 +1,13 @@
+{
+  "name": "carnaghan-content",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Content for carnaghan.com. Source of truth; the live site is a derived projection.",
+  "scripts": {
+    "reconcile": "node scripts/reconcile.js --content content --config site.config.json --out dist-projection"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3"
+  }
+}

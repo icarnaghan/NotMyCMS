@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="{{SITE_LOCALE}}">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{SITE_TITLE}}</title>
+    <!-- analytics:start -->
+    <script>
+      // Apply the analytics opt-out before gtag loads, so an opted-out visitor
+      // is not counted by the initial page view either. Mirrors
+      // applyAnalyticsOptOut() in src/lib/settings-preferences.ts.
+      try {
+        if (localStorage.getItem("{{ANALYTICS_OPT_OUT_KEY}}") === "true") {
+          window["ga-disable-{{ANALYTICS_ID}}"] = true;
+        }
+      } catch (e) {
+        /* storage unavailable — analytics stays enabled */
+      }
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ANALYTICS_ID}}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "{{ANALYTICS_ID}}");
+    </script>
+    <!-- analytics:end -->
+    <link rel="canonical" href="{{SITE_URL}}" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="{{SITE_NAME}}"
+      href="{{SITE_URL}}/rss.xml"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

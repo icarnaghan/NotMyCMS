@@ -1,0 +1,18 @@
+# The Content_Repo tracks content, the CI config, and the committed lockfile — nothing
+# generated. Named `gitignore` here (no dot) so it is a normal file in the source repo;
+# `make reconcile-sync` installs it as `.gitignore` in the clone.
+
+# CI dependency install. The lockfile IS committed (npm ci needs it); the tree is not.
+node_modules/
+
+# Reconcile staging output, rebuilt every run.
+dist-projection/
+
+# Derived manifests. The Reconcile_Job regenerates content/{type}/manifest.json from the
+# tree on every push, and the source repo's `make build` writes them here too via the
+# public/content symlink. They are projection output, not content — tracking them would
+# create a second, stale source. (page.json files ARE content and are tracked.)
+content/*/manifest.json
+
+# macOS
+.DS_Store

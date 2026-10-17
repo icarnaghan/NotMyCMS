@@ -1,0 +1,64 @@
+# Reconcile_Job for the Content_Repo (carnaghan/carnaghan-content).
+#
+# Managed in the source repo under content-repo-ci/ and copied here with
+# `make reconcile-sync`. Edit it there, not here, or the next sync overwrites it.
+#
+# On a push to main: regenerate the Published_Projection from the content tree and sync
+# it to S3. The content is the source of truth; S3 is derived, so `aws s3 sync --delete`
+# is safe — anything in the bucket that is not in this push is stale and should go.
+
+stages:
+  - reconcile
+
+variables:
+  NODE_VERSION: "22"
+  # Pinned, immutable installer URL rather than "latest", so the download that runs with
+  # deploy credentials is reproducible. Matches the source repo's deploy job.
+  AWS_CLI_VERSION: "2.17.20"
+
+reconcile:
+  stage: reconcile
+  image: node:${NODE_VERSION}
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  before_script:
+    - apt-get update && apt-get install -y curl unzip
+    - curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VERSION}.zip" -o "awscliv2.zip"
+    - unzip -q awscliv2.zip && ./aws/install
+    - >
+      export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s"
+      $(aws sts assume-role-with-web-identity
+      --role-arn ${AWS_DEPLOY_ROLE_ARN}
+      --role-session-name "content-reconcile-${CI_PIPELINE_ID}"
+      --web-identity-token ${GITLAB_OIDC_TOKEN}
+      --duration-seconds 3600
+      --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
+      --output text))
+    - npm ci --prefer-offline
+  script:
+    # Build the projection into a staging directory from the content tree.
+    - node scripts/reconcile.js --content content --config site.config.json --out dist-projection
+    # Bucket and CloudFront alias come from the committed site config, not hardcoded here.
+    - SITE_BUCKET=$(node -p "require('./site.config.json').apexDomain")
+    - SITE_DOMAIN=$(node -p "require('./site.config.json').domain")
+    # Sync ONLY the content/ prefix with --delete. Scoping the delete to content/ is
+    # essential: the bucket also holds the SPA shell, hashed assets, favicon and the
+    # prerendered per-page heads — all produced by the SOURCE repo's build, none of them
+    # in this projection. A bucket-wide `aws s3 sync --delete` would wipe them. content/
+    # is the one prefix this repo owns outright, so it is the only one it may prune.
+    - aws s3 sync dist-projection/content/ "s3://${SITE_BUCKET}/content/" --delete
+    # Copy the derived index files individually (no --delete, so nothing else is touched).
+    - aws s3 cp dist-projection/search-index.json "s3://${SITE_BUCKET}/search-index.json"
+    - aws s3 cp dist-projection/rss.xml "s3://${SITE_BUCKET}/rss.xml"
+    - aws s3 cp dist-projection/sitemap.xml "s3://${SITE_BUCKET}/sitemap.xml"
+    - aws s3 cp dist-projection/robots.txt "s3://${SITE_BUCKET}/robots.txt"
+    # Invalidate the content prefix (one wildcard path) and the index files.
+    - >
+      aws cloudfront create-invalidation
+      --distribution-id $(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items[?contains(@,'${SITE_DOMAIN}')]].Id" --output text)
+      --paths "/content/*" "/search-index.json" "/rss.xml" "/sitemap.xml" "/robots.txt"
+  environment:
+    name: production

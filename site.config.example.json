@@ -1,0 +1,36 @@
+{
+  "resourcePrefix": "example",
+  "storagePrefix": "example",
+  "region": "us-east-1",
+  "apexDomain": "example.com",
+  "domain": "www.example.com",
+  "hostedZone": "example.com",
+  "hostedZoneId": "Z0123456789ABCDEFGHIJ",
+  "siteUrl": "https://www.example.com",
+  "siteName": "Your Name",
+  "siteTitle": "example.com",
+  "adminTitle": "NotMyCMS",
+  "tagline": "A short descriptor shown in page headers",
+  "siteDescription": "A longer sentence used for the RSS feed and meta description",
+  "locale": "en-us",
+  "author": {
+    "name": "Your Name",
+    "email": "you@example.com",
+    "avatar": "/images/avatar.jpg"
+  },
+  "analytics": {
+    "provider": "ga4",
+    "measurementId": "G-XXXXXXXXXX"
+  },
+  "docsBaseUrl": "https://github.com/icarnaghan/NotMyCMS/blob/main",
+  "git": {
+    "provider": "gitlab",
+    "apiUrl": "https://gitlab.com/api/v4",
+    "contentProjectId": "<numeric id of your private Content_Repo>",
+    "branch": "main"
+  },
+  "social": [
+    { "id": "github", "label": "GitHub", "href": "https://github.com/your-handle" },
+    { "id": "linkedin", "label": "LinkedIn", "href": "https://www.linkedin.com/in/your-handle/" }
+  ]
+}

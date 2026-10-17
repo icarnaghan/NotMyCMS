@@ -1,0 +1,256 @@
+stages:
+  - lint
+  - test
+  - security
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "22"
+
+default:
+  image: node:${NODE_VERSION}
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules/
+    policy: pull
+
+# ── Lint ────────────────────────────────────────────────────────────────────
+
+.install: &install
+  before_script:
+    - npm ci --prefer-offline
+
+eslint:
+  stage: lint
+  <<: *install
+  script:
+    - npm run lint
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules/
+    policy: pull-push
+
+prettier:
+  stage: lint
+  <<: *install
+  script:
+    - npx prettier --check .
+
+typecheck:
+  stage: lint
+  <<: *install
+  script:
+    # `tsc -b`, not bare `tsc`. The root tsconfig.json is `files: []` plus project
+    # references, so `tsc --noEmit` compiles zero files and passes unconditionally —
+    # this job was a no-op until it was noticed. Verified by introducing a deliberate
+    # type error: bare tsc exits 0, `tsc -b` reports it.
+    - npx tsc -b --noEmit
+
+# Guards the site/framework separation: site.config.json must be valid, and no
+# code outside it may hardcode this site's domain, name or author. Runs in lint
+# because a violation is a code-quality regression, not a test failure. Needs no
+# dependencies, hence no install.
+site-config:
+  stage: lint
+  script:
+    - node scripts/check-site-config.js
+    - node scripts/check-no-site-strings.js
+    - node scripts/check-pages.js
+
+# ── Test ─────────────────────────────────────────────────────────────────────
+
+# Unit tests for the public site (src/), the admin SPA, and the Lambda handlers.
+# Each package has its own vitest suite and is run from its own directory.
+test:
+  stage: test
+  <<: *install
+  script:
+    - npm test
+    - cd admin && npm ci --prefer-offline && npm test && cd ..
+    - cd infra && npm ci --prefer-offline && npm test
+
+# ── Security ─────────────────────────────────────────────────────────────────
+
+# Blocking: known high/critical dependency CVEs must not reach production.
+# Blocking, but scoped to PRODUCTION dependencies — the code that actually ships
+# to visitors. A high advisory here is real exposure and should stop the line.
+#
+# Dev/build tooling (vitest, eslint, gray-matter and its js-yaml) is excluded
+# deliberately: it never reaches a browser or a Lambda, and blocking on it means
+# the pipeline breaks whenever a new advisory lands in a build tool — which is
+# frequent and usually not actionable. The npm-audit-dev job below still reports
+# those, without gating the build.
+npm-audit:
+  stage: security
+  <<: *install
+  script:
+    - npm audit --audit-level=high --omit=dev
+
+# Advisory: the full picture, including build tooling and the other packages.
+# infra/ intentionally isn't in the blocking job — aws-cdk-lib carries a
+# transitive advisory that can't be fixed from here (see docs/ci-cd.md).
+npm-audit-dev:
+  stage: security
+  <<: *install
+  script:
+    - npm audit --audit-level=high || true
+    - cd admin && npm ci --prefer-offline && (npm audit --audit-level=high || true) && cd ..
+    - cd infra && npm ci --prefer-offline && (npm audit --audit-level=high || true)
+  allow_failure: true
+
+ash-scan:
+  stage: security
+  image: python:3.10
+  script:
+    - pip install git+https://github.com/awslabs/automated-security-helper.git@v3.2.4
+    - ash --mode local --no-fail-on-findings
+  artifacts:
+    paths:
+      - .ash/ash_output
+    expire_in: 1 week
+  allow_failure: true
+
+sast:
+  stage: security
+  variables:
+    SAST_EXCLUDED_PATHS: "node_modules, dist, infra/node_modules, infra/cdk.out"
+  allow_failure: true
+
+dependency_scanning:
+  stage: security
+  allow_failure: true
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+
+# ── Build ────────────────────────────────────────────────────────────────────
+
+build:
+  stage: build
+  <<: *install
+  variables:
+    # Where the content clone lands. generate-manifest.js reads CONTENT_ROOT; vite and
+    # the meta-page step derive from the manifests it writes, so nothing else needs it.
+    CONTENT_ROOT: content-repo/content
+  script:
+    # Content lives in its own private repository now (content-storage stage 7); it is no
+    # longer in this repo. Clone it so the build can read the markdown to generate the
+    # manifests, sitemap and prerendered heads. The running site still fetches content
+    # from S3 at runtime — this clone is build-input only and is not shipped.
+    #
+    # CONTENT_REPO_URL is a protected CI/CD variable holding an authenticated clone URL
+    # (a read-only deploy token embedded, e.g.
+    # https://<token-name>:<token>@gitlab.com/carnaghan/carnaghan-content.git). Shallow,
+    # single-branch: the build needs the current tree, not the history.
+    - git clone --depth 1 --branch main "${CONTENT_REPO_URL}" content-repo
+    - node scripts/generate-manifest.js
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+build-admin:
+  stage: build
+  script:
+    - cd admin && npm ci --prefer-offline && npm run build
+  artifacts:
+    paths:
+      - admin/dist/
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# Accessibility audit (advisory). Reuses the built dist/ from the build job and
+# runs Lighthouse's accessibility category against the homepage. Reports without
+# blocking (allow_failure), consistent with the security scans.
+#
+# Chrome runs with --no-sandbox (see chromeFlags in lighthouserc.json) because
+# this container runs as root, and Chrome refuses to start as root with the
+# sandbox enabled. That is acceptable here: Chrome only loads our own
+# freshly-built static output inside an ephemeral CI container, never untrusted
+# input. --disable-dev-shm-usage avoids crashes from the small /dev/shm that
+# containers get by default.
+a11y:
+  stage: build
+  image: node:${NODE_VERSION}
+  needs:
+    - build
+  before_script:
+    - apt-get update && apt-get install -y chromium
+    - export CHROME_PATH=$(command -v chromium || command -v chromium-browser)
+  script:
+    - npx --yes @lhci/cli@0.14.0 autorun
+  artifacts:
+    paths:
+      - .lighthouseci/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
+
+# ── Deploy ───────────────────────────────────────────────────────────────────
+
+deploy:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  needs:
+    - build
+    - build-admin
+  variables:
+    # Pin the AWS CLI to an immutable, versioned installer URL rather than the
+    # mutable "latest" endpoint, so the download that runs with deploy
+    # credentials is tamper-evident and reproducible. Bump deliberately.
+    AWS_CLI_VERSION: "2.17.20"
+  before_script:
+    - apt-get update && apt-get install -y curl unzip
+    - curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VERSION}.zip" -o "awscliv2.zip"
+    - unzip -q awscliv2.zip && ./aws/install
+    - >
+      export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s"
+      $(aws sts assume-role-with-web-identity
+      --role-arn ${AWS_DEPLOY_ROLE_ARN}
+      --role-session-name "gitlab-ci-${CI_PROJECT_ID}-${CI_PIPELINE_ID}"
+      --web-identity-token ${GITLAB_OIDC_TOKEN}
+      --duration-seconds 3600
+      --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
+      --output text))
+    - cd infra && npm ci --prefer-offline
+  script:
+    # ALERT_EMAIL is a GitLab CI variable (Settings > CI/CD > Variables). When it
+    # is unset the context value is empty and the stack simply creates the alert
+    # topic with no subscription, so the deploy still succeeds.
+    - npx cdk deploy --all --require-approval never --context alertEmail="${ALERT_EMAIL}"
+    # After the deploy, so the exports exist on a first deploy, and before the admin
+    # sync, so a bundle built with stale Cognito IDs is never published. The build-admin
+    # job has no AWS credentials and cannot check this itself; it only verifies the file
+    # is well-formed. Failing here is the intended outcome: the committed values no
+    # longer match the stack, so `make admin-env` needs running and the pipeline re-run.
+    - cd .. && node scripts/generate-admin-env.js --check && cd infra
+    # Bucket and CloudFront alias come from site.config.json rather than being repeated
+    # here. The `environment:url` below cannot use shell expansion, so that one literal
+    # remains; it is cosmetic (the GitLab environment link) and is dealt with alongside
+    # the rest of the infrastructure naming in stage 5 of the configurable-site spec.
+    - SITE_BUCKET=$(node -p "require('../site.config.json').apexDomain")
+    - SITE_DOMAIN=$(node -p "require('../site.config.json').domain")
+    - aws s3 sync ../admin/dist/ "s3://${SITE_BUCKET}/admin/" --delete
+    - aws cloudfront create-invalidation --distribution-id $(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items[?contains(@,'${SITE_DOMAIN}')]].Id" --output text) --paths "/admin/*"
+  environment:
+    name: production
+    url: https://www.carnaghan.com
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual

@@ -1,0 +1,32 @@
+{
+  "name": "notmycms-admin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "prebuild": "node ../scripts/check-admin-env.js",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest --run"
+  },
+  "dependencies": {
+    "@cloudscape-design/components": "^3.0.1253",
+    "@cloudscape-design/design-tokens": "^3.0.103",
+    "@cloudscape-design/global-styles": "^1.0.54",
+    "amazon-cognito-identity-js": "^6.3.16",
+    "lucide-react": "^1.25.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.13.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.1",
+    "vitest": "^4.1.7"
+  }
+}

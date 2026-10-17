@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "dist"
+  },
+  "include": ["bin", "lib", "lambda"],
+  // Test files are included deliberately. They were excluded, which meant every
+  // infra test file was typechecked by nothing: vitest does not typecheck, and the
+  // repo-root `tsc -b` only references the site and node projects. admin/ and the
+  // site both typecheck their tests; infra was the one that did not.
+  "exclude": ["node_modules", "cdk.out", "dist"]
+}
