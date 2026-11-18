@@ -296,14 +296,19 @@ function AppContent() {
             }
           />
           <Route path="/tags/:name" element={<TagRedirect />} />
-          <Route path="/teaching/cmst388-tips/:slug" element={<ContentPage basePath="pages" />} />
+          {siteConfig.guideSection && (
+            <Route
+              path={`/${siteConfig.guideSection.path}/:slug`}
+              element={<ContentPage basePath="pages" />}
+            />
+          )}
           {/*
             Catch-all resolver. A path that matches no explicit route above is either a
             landing page (slug in the runtime pages manifest) or a post; LandingOrContent
             decides, landing-first, and renders the 404 page for anything that is neither.
             This replaces both the old per-slug landing routes and the `/:slug → posts`
             route, and absorbs the former `*` → NotFound: ContentPage already 404s an
-            unknown post. More specific routes (e.g. the cmst388-tips child guides above)
+            unknown post. More specific routes (e.g. the configured guide section above)
             still win by React Router's specificity ranking.
           */}
           <Route

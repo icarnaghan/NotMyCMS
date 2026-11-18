@@ -1,0 +1,744 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`theme baseline > route / 1`] = `
+"title: Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+img "Example Author"
+heading level=1 "Example Author"
+link "GitHub" -> https://github.com/example
+link "LinkedIn" -> https://www.linkedin.com/in/example/
+button "Blog Posts"
+button "Knowledge Base"
+heading level=2 "Recent Posts"
+button "Post number 01"
+button "React"
+button "PHP"
+button "Post number 02"
+button "AWS"
+button "CSS"
+button "Post number 03"
+button "PHP"
+button "SEO"
+button "Post number 04"
+button "CSS"
+button "Linux"
+button "Post number 05"
+button "SEO"
+button "React"
+button "Post number 06"
+button "Linux"
+button "AWS"
+button "View all posts →"
+"
+`;
+
+exports[`theme baseline > route /about 1`] = `
+"title: About Me | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "About Me"
+heading level=2 "Background"
+heading level=2 "This Site"
+heading level=2 "Skills & Technologies"
+heading level=2 "Doctoral Research"
+heading level=2 "Connect"
+link "GitHub" -> https://github.com/example
+link "LinkedIn" -> https://www.linkedin.com/in/example/
+"
+`;
+
+exports[`theme baseline > route /apps 1`] = `
+"title: Apps | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Apps"
+heading level=3 "Logstead"
+button "Read the write-up"
+link "Source" -> https://github.com/icarnaghan/logstead
+heading level=3 "Personal AWS VPN"
+button "Read the write-up"
+link "Source" -> https://github.com/icarnaghan/Wireguard-VPN
+heading level=3 "Minecraft Server Manager"
+button "Read the write-up"
+link "Source" -> https://github.com/icarnaghan/minecraft-server
+"
+`;
+
+exports[`theme baseline > route /bitesize-javascript 1`] = `
+"title: Bitesize JavaScript | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Bitesize JavaScript"
+link "1 JavaScript Data Types, Values, and Variables" -> /javascript-data-types-values-and-variables
+link "2 JavaScript Operators" -> /javascript-operators
+link "3 JavaScript Conditional Statements" -> /javascript-conditional-statements
+link "4 JavaScript Loops" -> /javascript-loops
+link "5 JavaScript Functions" -> /javascript-functions
+link "6 JavaScript Call Stack" -> /javascript-call-stack
+link "7 JavaScript Scope" -> /javascript-scope
+link "8 JavaScript Arrays - Fundamentals" -> /javascript-arrays-fundamentals
+link "9 JavaScript Arrays - Properties and Methods" -> /javascript-arrays-properties-and-methods
+link "10 JavaScript Objects" -> /javascript-objects
+link "11 Manipulating the Document Object Model (DOM)" -> /javascript-manipulating-the-document-object-model-dom
+heading level=2 "Other JavaScript Tutorials"
+link "Understanding Asynchronous JavaScript" -> /understanding-asynchronous-javascript
+link "Understanding Higher Order Functions in JavaScript" -> /understanding-higher-order-functions-in-javascript
+link "Creating a Super Simple JavaScript Validated Form" -> /creating-a-super-simple-javascript-validated-form
+link "Regular Expressions in JavaScript" -> /regular-expressions-in-javascript
+link "Important Features of ES6" -> /important-features-of-es6
+link "JavaScript Closures" -> /javascript-closures
+"
+`;
+
+exports[`theme baseline > route /categories 1`] = `
+"title: Categories | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Categories(4)"
+searchbox
+"
+`;
+
+exports[`theme baseline > route /knowledge-base 1`] = `
+"title: Knowledge Base | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Knowledge Base(30)"
+searchbox
+button current=false disabled
+button "1" current=true
+button "2" current=false
+button current=false
+button "Guide number 01"
+button "Guide number 02"
+button "Guide number 03"
+button "Guide number 04"
+button "Guide number 05"
+button "Guide number 06"
+button "Guide number 07"
+button "Guide number 08"
+button "Guide number 09"
+button "Guide number 10"
+button "Guide number 11"
+button "Guide number 12"
+button "Guide number 13"
+button "Guide number 14"
+button "Guide number 15"
+button "Guide number 16"
+button "Guide number 17"
+button "Guide number 18"
+button "Guide number 19"
+button "Guide number 20"
+button "Guide number 21"
+button "Guide number 22"
+button "Guide number 23"
+button "Guide number 24"
+"
+`;
+
+exports[`theme baseline > route /knowledge-base/guide-03 1`] = `
+"title: A Rich Article | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+navigation
+link "Home" -> /
+button "Show path" expanded=false
+link "Knowledge Base" -> /knowledge-base
+link "A Rich Article" -> (no href) current=page disabled
+heading level=1 "A Rich Article"
+button "React"
+button "AWS"
+link "link" -> https://example.com
+heading level=2 "First section"
+heading level=3 "A subsection"
+button
+table
+columnheader "Name"
+columnheader "Value"
+heading level=2 "Second section"
+img "Alt text"
+heading level=2 "Related Posts"
+button "Guide number 01"
+button "React"
+button "PHP"
+button "Guide number 05"
+button "SEO"
+button "React"
+button "Guide number 13"
+button "React"
+button "PHP"
+button "Guide number 17"
+button "SEO"
+button "React"
+complementary
+button
+heading level=2 "On this page"
+navigation
+link "First section" -> #first-section current=true
+link "Second section" -> #second-section
+"
+`;
+
+exports[`theme baseline > route /knowledge-base?page=2 1`] = `
+"title: Knowledge Base | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Knowledge Base(30)"
+searchbox
+button current=false
+button "1" current=false
+button "2" current=true
+button current=false disabled
+button "Guide number 25"
+button "Guide number 26"
+button "Guide number 27"
+button "Guide number 28"
+button "Guide number 29"
+button "Guide number 30"
+"
+`;
+
+exports[`theme baseline > route /missing-post-slug 1`] = `
+"title: Page Not Found | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+main
+heading level=1 "404 — Page Not Found"
+button "Go Home"
+"
+`;
+
+exports[`theme baseline > route /post-07 1`] = `
+"title: A Rich Article | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+main
+navigation
+link "Home" -> /
+button "Show path" expanded=false
+link "Posts" -> /posts
+link "A Rich Article" -> (no href) current=page disabled
+heading level=1 "A Rich Article"
+button "React"
+button "AWS"
+link "link" -> https://example.com
+heading level=2 "First section"
+heading level=3 "A subsection"
+button
+table
+columnheader "Name"
+columnheader "Value"
+heading level=2 "Second section"
+img "Alt text"
+heading level=2 "Related Posts"
+button "Post number 01"
+button "React"
+button "PHP"
+button "Post number 05"
+button "SEO"
+button "React"
+button "Post number 13"
+button "React"
+button "PHP"
+button "Post number 17"
+button "SEO"
+button "React"
+complementary
+button
+heading level=2 "On this page"
+navigation
+link "First section" -> #first-section current=true
+link "Second section" -> #second-section
+"
+`;
+
+exports[`theme baseline > route /posts 1`] = `
+"title: Blog Posts | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Posts(45)"
+button "All categories" expanded=false
+searchbox
+button current=false disabled
+button "1" current=true
+button "2" current=false
+button "3" current=false
+button current=false
+button "Preferences"
+table
+columnheader "Title"
+button "Title"
+button "Title"
+columnheader "Date"
+button "Date"
+button "Date"
+columnheader "Category"
+button "Category"
+button "Category"
+columnheader "Tags"
+button "Tags"
+button "Tags"
+button "Post number 12"
+button "Linux"
+button "AWS"
+button "Post number 24"
+button "Linux"
+button "AWS"
+button "Post number 36"
+button "Linux"
+button "AWS"
+button "Post number 11"
+button "SEO"
+button "React"
+button "Post number 23"
+button "SEO"
+button "React"
+button "Post number 35"
+button "SEO"
+button "React"
+button "Post number 10"
+button "CSS"
+button "Linux"
+button "Post number 22"
+button "CSS"
+button "Linux"
+button "Post number 34"
+button "CSS"
+button "Linux"
+button "Post number 09"
+button "PHP"
+button "SEO"
+button "Post number 21"
+button "PHP"
+button "SEO"
+button "Post number 33"
+button "PHP"
+button "SEO"
+button "Post number 45"
+button "PHP"
+button "SEO"
+button "Post number 08"
+button "AWS"
+button "CSS"
+button "Post number 20"
+button "AWS"
+button "CSS"
+button "Post number 32"
+button "AWS"
+button "CSS"
+button "Post number 44"
+button "AWS"
+button "CSS"
+button "Post number 07"
+button "React"
+button "PHP"
+button "Post number 19"
+button "React"
+button "PHP"
+button "Post number 31"
+button "React"
+button "PHP"
+"
+`;
+
+exports[`theme baseline > route /posts?page=2 1`] = `
+"title: Blog Posts | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Posts(45)"
+button "All categories" expanded=false
+searchbox
+button current=false
+button "1" current=false
+button "2" current=true
+button "3" current=false
+button current=false
+button "Preferences"
+table
+columnheader "Title"
+button "Title"
+button "Title"
+columnheader "Date"
+button "Date"
+button "Date"
+columnheader "Category"
+button "Category"
+button "Category"
+columnheader "Tags"
+button "Tags"
+button "Tags"
+button "Post number 43"
+button "React"
+button "PHP"
+button "Post number 06"
+button "Linux"
+button "AWS"
+button "Post number 18"
+button "Linux"
+button "AWS"
+button "Post number 30"
+button "Linux"
+button "AWS"
+button "Post number 42"
+button "Linux"
+button "AWS"
+button "Post number 05"
+button "SEO"
+button "React"
+button "Post number 17"
+button "SEO"
+button "React"
+button "Post number 29"
+button "SEO"
+button "React"
+button "Post number 41"
+button "SEO"
+button "React"
+button "Post number 04"
+button "CSS"
+button "Linux"
+button "Post number 16"
+button "CSS"
+button "Linux"
+button "Post number 28"
+button "CSS"
+button "Linux"
+button "Post number 40"
+button "CSS"
+button "Linux"
+button "Post number 03"
+button "PHP"
+button "SEO"
+button "Post number 15"
+button "PHP"
+button "SEO"
+button "Post number 27"
+button "PHP"
+button "SEO"
+button "Post number 39"
+button "PHP"
+button "SEO"
+button "Post number 02"
+button "AWS"
+button "CSS"
+button "Post number 14"
+button "AWS"
+button "CSS"
+button "Post number 26"
+button "AWS"
+button "CSS"
+"
+`;
+
+exports[`theme baseline > route /posts?page=3 1`] = `
+"title: Blog Posts | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Posts(45)"
+button "All categories" expanded=false
+searchbox
+button current=false
+button "1" current=false
+button "2" current=false
+button "3" current=true
+button current=false disabled
+button "Preferences"
+table
+columnheader "Title"
+button "Title"
+button "Title"
+columnheader "Date"
+button "Date"
+button "Date"
+columnheader "Category"
+button "Category"
+button "Category"
+columnheader "Tags"
+button "Tags"
+button "Tags"
+button "Post number 38"
+button "AWS"
+button "CSS"
+button "Post number 01"
+button "React"
+button "PHP"
+button "Post number 13"
+button "React"
+button "PHP"
+button "Post number 25"
+button "React"
+button "PHP"
+button "Post number 37"
+button "React"
+button "PHP"
+"
+`;
+
+exports[`theme baseline > route /posts?tag=react 1`] = `
+"title: Blog Posts | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Posts(15/45)"
+button "All categories" expanded=false
+searchbox
+button
+button current=false disabled
+button "1" current=true
+button current=false disabled
+button "Preferences"
+table
+columnheader "Title"
+button "Title"
+button "Title"
+columnheader "Date"
+button "Date"
+button "Date"
+columnheader "Category"
+button "Category"
+button "Category"
+columnheader "Tags"
+button "Tags"
+button "Tags"
+button "Post number 11"
+button "SEO"
+button "React"
+button "Post number 23"
+button "SEO"
+button "React"
+button "Post number 35"
+button "SEO"
+button "React"
+button "Post number 07"
+button "React"
+button "PHP"
+button "Post number 19"
+button "React"
+button "PHP"
+button "Post number 31"
+button "React"
+button "PHP"
+button "Post number 43"
+button "React"
+button "PHP"
+button "Post number 05"
+button "SEO"
+button "React"
+button "Post number 17"
+button "SEO"
+button "React"
+button "Post number 29"
+button "SEO"
+button "React"
+button "Post number 41"
+button "SEO"
+button "React"
+button "Post number 01"
+button "React"
+button "PHP"
+button "Post number 13"
+button "React"
+button "PHP"
+button "Post number 25"
+button "React"
+button "PHP"
+button "Post number 37"
+button "React"
+button "PHP"
+"
+`;
+
+exports[`theme baseline > route /tags 1`] = `
+"title: Tags | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Tags(6)"
+searchbox
+"
+`;
+
+exports[`theme baseline > route /teaching 1`] = `
+"title: Teaching | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+heading level=1 "Classes I Teach"
+link "UMGC Schedule of Classes" -> https://webapps.umgc.edu/soc/us.cfm
+heading level=2 "Current Courses"
+link "CMST 387" -> /posts?tag=cmst-387
+heading level=3 "Principles of Web Design and Technology III"
+link "Videos" -> https://www.youtube.com/playlist?list=PLstLbm0RKNISjebURDKkP_yU-uCRzYVS4
+link "CMST 388" -> /posts?tag=cmst-388
+heading level=3 "Fundamentals of JavaScript"
+button "Project Tips"
+link "GitHub Code" -> https://github.com/topics/cmst-388
+heading level=2 "Previous Courses"
+link "CMST 315" -> /posts?tag=cmst-315
+heading level=3 "Game Design"
+link "CMST 488" -> /posts?tag=cmst-488
+heading level=3 "Advanced JavaScript"
+link "Videos" -> https://www.youtube.com/playlist?list=PLstLbm0RKNISoBiu51y1qY0EcQY1lNCdQ
+link "GitHub Code" -> https://github.com/topics/cmst-488
+link "CMST 386" -> /posts?tag=cmst-386
+heading level=3 "Principles of Web Design and Technology II"
+link "Videos" -> https://www.youtube.com/watch?v=puxJYv5BN2M
+link "CMST 385" -> /posts?tag=cmst-385
+heading level=3 "Principles of Web Design and Technology I"
+link "Videos" -> https://www.youtube.com/watch?v=puxJYv5BN2M
+link "CMST 303" -> /posts?tag=cmst-303
+heading level=3 "Advanced Application Software"
+link "CMST 301" -> /posts?tag=cmst-301
+heading level=3 "Digital Media and Society"
+link "CMST 355" -> /posts?tag=cmst-355
+heading level=3 "Content Management Systems"
+link "Videos" -> https://www.youtube.com/watch?v=todJktIBCTI
+"
+`;
+
+exports[`theme baseline > route /teaching/cmst388-tips 1`] = `
+"title: CMST 388 Project Tips | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+navigation
+link "Home" -> /
+button "Show path" expanded=false
+link "Teaching" -> /teaching
+link "CMST 388 Project Tips" -> (no href) current=page disabled
+heading level=1 "CMST 388 Project Tips"
+link "Project 1: JavaScript Selectors" -> /teaching/cmst388-tips/project-1-javascript-selectors
+link "Project 3: Ticket Purchasing" -> /teaching/cmst388-tips/project-3-ticket-purchasing
+link "Project 4: Student Portfolio" -> /teaching/cmst388-tips/project-4-student-portfolio
+heading level=2 "Additional Resources"
+link "Bitesize JavaScript" -> /bitesize-javascript
+link "Creating a Super Simple JavaScript Validated Form" -> /creating-a-super-simple-javascript-validated-form/
+"
+`;
+
+exports[`theme baseline > route /teaching/cmst388-tips/some-guide 1`] = `
+"title: A Rich Article | Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+navigation
+link "Home" -> /
+button "Show path" expanded=false
+link "CMST 388 Project Tips" -> /teaching/cmst388-tips
+link "A Rich Article" -> (no href) current=page disabled
+heading level=1 "A Rich Article"
+button "React"
+button "AWS"
+link "link" -> https://example.com
+heading level=2 "First section"
+heading level=3 "A subsection"
+button
+table
+columnheader "Name"
+columnheader "Value"
+heading level=2 "Second section"
+img "Alt text"
+complementary
+button
+heading level=2 "On this page"
+navigation
+link "First section" -> #first-section current=true
+link "Second section" -> #second-section
+"
+`;
+
+exports[`theme baseline > search modal: open and query 1`] = `
+"title: Example Site
+banner
+link "Example Site" -> /
+button "More" expanded=false
+main
+img "Example Author"
+heading level=1 "Example Author"
+link "GitHub" -> https://github.com/example
+link "LinkedIn" -> https://www.linkedin.com/in/example/
+button "Blog Posts"
+button "Knowledge Base"
+heading level=2 "Recent Posts"
+button "Post number 01"
+button "React"
+button "PHP"
+button "Post number 02"
+button "AWS"
+button "CSS"
+button "Post number 03"
+button "PHP"
+button "SEO"
+button "Post number 04"
+button "CSS"
+button "Linux"
+button "Post number 05"
+button "SEO"
+button "React"
+button "Post number 06"
+button "Linux"
+button "AWS"
+button "View all posts →"
+dialog "Cookies Policy"
+heading level=2 "Cookies Policy"
+button "Close"
+button "Close"
+dialog "Search"
+heading level=2 "Search"
+button "Close"
+searchbox "Search posts and knowledge base"
+button
+button "Post number 07"
+button "Guide number 07"
+button "Post number 01"
+button "Post number 02"
+button "Post number 03"
+button "Post number 04"
+button "Post number 05"
+button "Post number 06"
+button "Post number 08"
+button "Post number 09"
+button "Post number 17"
+button "Post number 27"
+button "Post number 37"
+button "Guide number 01"
+button "Guide number 02"
+button "Guide number 03"
+button "Guide number 04"
+button "Guide number 05"
+button "Guide number 06"
+button "Guide number 08"
+"
+`;

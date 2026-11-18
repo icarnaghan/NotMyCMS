@@ -30,6 +30,35 @@ function valid(overrides = {}) {
   };
 }
 
+describe("validateSiteConfig optional presentation fields", () => {
+  it("accepts homeIntro, categoryDescriptions and guideSection", () => {
+    const cfg = valid({
+      homeIntro: "Hello.",
+      categoryDescriptions: { coding: "Code." },
+      guideSection: { path: "teaching/guides", label: "Guides" },
+    });
+    expect(validateSiteConfig(cfg)).toEqual([]);
+  });
+  it("rejects an empty homeIntro", () => {
+    expect(validateSiteConfig(valid({ homeIntro: "" }))).toContain(
+      "homeIntro must be a non-empty string when present"
+    );
+  });
+  it("rejects a non-object or empty-valued categoryDescriptions", () => {
+    expect(validateSiteConfig(valid({ categoryDescriptions: ["x"] }))).toHaveLength(1);
+    expect(validateSiteConfig(valid({ categoryDescriptions: { a: "" } }))).toEqual([
+      "categoryDescriptions.a must be a non-empty string",
+    ]);
+  });
+  it.each(["/guides", "guides/", "Guides", "a b", ""])("rejects guideSection.path %j", (path) => {
+    expect(validateSiteConfig(valid({ guideSection: { path, label: "G" } }))).not.toEqual([]);
+  });
+  it("requires a guideSection label", () => {
+    expect(validateSiteConfig(valid({ guideSection: { path: "g", label: "" } }))).toEqual([
+      "guideSection.label is required",
+    ]);
+  });
+});
 describe("validateSiteConfig", () => {
   it("accepts a minimal valid config", () => {
     expect(validateSiteConfig(valid())).toEqual([]);

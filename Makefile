@@ -43,7 +43,7 @@ ALERT_TOPIC_NAME := $(RESOURCE_PREFIX)-admin-alerts
 
 .PHONY: help install dev dev-admin check check-config check-all fix test test-root \
         test-admin test-infra audit audit-dev scan build build-admin admin-env \
-        check-admin-env content-drift verify-build ci synth diff require-alert-email \
+        check-admin-env content-drift verify-build fingerprint fingerprint-check ci synth diff require-alert-email \
         deploy-local staging-diff staging-deploy staging-destroy cost budget alerts clean
 
 help: ## Show this help
@@ -179,6 +179,14 @@ reconcile-sync: ## Copy the Reconcile_Job CI + scripts into the Content_Repo clo
 
 verify-build: ## Assert the build produced a complete sitemap, meta pages, and head
 	node scripts/verify-build.js
+
+fingerprint: ## Record a build fingerprint. Usage: make fingerprint OUT=path.json (after make build)
+	@test -n "$(OUT)" || { echo "OUT=<file> is required"; exit 2; }
+	node scripts/build-fingerprint.js --out "$(OUT)"
+
+fingerprint-check: ## Compare the build to a baseline. Usage: make fingerprint-check BASELINE=path.json
+	@test -n "$(BASELINE)" || { echo "BASELINE=<file> is required"; exit 2; }
+	node scripts/build-fingerprint.js --check "$(BASELINE)"
 
 ci: check test audit build verify-build ## Everything CI checks before deploy
 

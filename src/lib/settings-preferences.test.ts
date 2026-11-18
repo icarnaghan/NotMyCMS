@@ -1,3 +1,4 @@
+import { siteConfig } from "./site-config";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   GA_MEASUREMENT_ID,
@@ -197,7 +198,7 @@ describe("analytics opt-out", () => {
   it("uses the same storage key the index.html bootstrap script reads", () => {
     // The inline script in index.html hardcodes this key so the opt-out applies
     // before gtag loads; keep them in sync.
-    expect(STORAGE_KEYS.analyticsOptOut).toBe("carnaghan-analytics-opt-out");
+    expect(STORAGE_KEYS.analyticsOptOut).toBe(`${siteConfig.storagePrefix}-analytics-opt-out`);
   });
 });
 

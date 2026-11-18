@@ -140,11 +140,12 @@ describe("the real index.html", () => {
   });
 
   it("renders fully with the real config", () => {
-    const html = injectSiteHtml(real, siteHtmlValues(readSiteConfig()));
+    const config = readSiteConfig();
+    const html = injectSiteHtml(real, siteHtmlValues(config));
 
     expect(html).not.toMatch(/\{\{|\}\}/);
-    expect(html).toContain("<title>carnaghan.com</title>");
-    expect(html).toContain('<link rel="canonical" href="https://www.carnaghan.com" />');
+    expect(html).toContain(`<title>${config.siteTitle}</title>`);
+    expect(html).toContain(`<link rel="canonical" href="${config.siteUrl}" />`);
   });
 
   it("renders fully with analytics removed", () => {
@@ -160,8 +161,9 @@ describe("the real index.html", () => {
     expect(html).not.toContain("googletagmanager");
     expect(html).not.toContain("localStorage");
     // The head must stay intact around the hole left by the removed region.
-    expect(html).toContain("<title>carnaghan.com</title>");
-    expect(html).toContain('<link rel="canonical" href="https://www.carnaghan.com" />');
+    const config = readSiteConfig();
+    expect(html).toContain(`<title>${config.siteTitle}</title>`);
+    expect(html).toContain(`<link rel="canonical" href="${config.siteUrl}" />`);
     expect(html).not.toMatch(/\n[ \t]*\n[ \t]*\n/);
   });
 });

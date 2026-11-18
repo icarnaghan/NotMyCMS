@@ -1,3 +1,4 @@
+import { siteConfig } from "../lib/site-config";
 import { useParams, useNavigate } from "react-router-dom";
 import { Component, isValidElement, type ReactNode, type ErrorInfo } from "react";
 import { useEffect, useState } from "react";
@@ -296,13 +297,13 @@ export function ContentPage({ basePath, slug: slugProp }: ContentPageProps) {
       ? "Posts"
       : basePath === "knowledge-base"
         ? "Knowledge Base"
-        : "CMST 388 Project Tips";
+        : (siteConfig.guideSection?.label ?? "Guides");
   const breadcrumbHref =
     basePath === "posts"
       ? "/posts"
       : basePath === "knowledge-base"
         ? "/knowledge-base"
-        : "/teaching/cmst388-tips";
+        : `/${siteConfig.guideSection?.path ?? ""}`;
 
   // Build table of contents from h2 headings only
   const anchorItems = headings

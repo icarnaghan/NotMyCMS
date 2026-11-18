@@ -99,6 +99,20 @@ export interface SiteConfig {
    * this at its own repository's docs.
    */
   docsBaseUrl?: string;
+  /** A short paragraph under the name on the home page. Omit for none. */
+  homeIntro?: string;
+  /** One-line descriptions shown on the categories page, keyed by category slug. */
+  categoryDescriptions?: Record<string, string>;
+  /**
+   * A section of standalone Markdown guides (the `pages` content type) served at
+   * `/<path>/:slug`, with a breadcrumb back to `/<path>`. Omit if the site has none.
+   */
+  guideSection?: {
+    /** Route path without leading or trailing slash. May contain slashes. */
+    path: string;
+    /** Breadcrumb label for the section, usually the title of its landing page. */
+    label: string;
+  };
 
   /** Where content is committed. Provider is abstracted; see the content-storage spec. */
   git: {

@@ -65,3 +65,52 @@ describe("admin SPA cache behaviors", () => {
     expect(assetsIdx).toBeLessThan(adminIdx);
   });
 });
+
+/**
+ * The same regression tripwire for the PUBLIC site. The default behavior serves the SPA
+ * shell and the prerendered per-page heads — mutable HTML that names the hashed bundle —
+ * and /content/* serves the manifests and markdown that change in place on every content
+ * edit. Both must revalidate (no-cache), or a code deploy / content publish is invisible
+ * until the browser's heuristic cache expires (the "only shows up in incognito" bug).
+ * Hashed /assets/* must stay cacheable so the fix does not kill the CDN fast path.
+ */
+describe("public site cache behaviors", () => {
+  const source = readFileSync(join(__dirname, "site-stack.ts"), "utf-8");
+
+  function behaviorBlock(pattern: string): string {
+    const marker = `distribution.addBehavior(\n      "${pattern}"`;
+    const altMarker = `distribution.addBehavior("${pattern}"`;
+    const start = source.indexOf(marker) >= 0 ? source.indexOf(marker) : source.indexOf(altMarker);
+    expect(start, `addBehavior("${pattern}") not found`).toBeGreaterThan(-1);
+    const inlineEnd = source.indexOf("});", start);
+    const multiEnd = source.indexOf("}\n    );", start);
+    const candidates = [inlineEnd, multiEnd].filter((i) => i > start);
+    expect(candidates.length, `addBehavior("${pattern}") close not found`).toBeGreaterThan(0);
+    return source.slice(start, Math.min(...candidates));
+  }
+
+  it("gives the default behavior (HTML shell + prerendered heads) the no-cache policy", () => {
+    // The defaultBehavior block, up to the first `},` closing it.
+    const start = source.indexOf("defaultBehavior: {");
+    expect(start, "defaultBehavior not found").toBeGreaterThan(-1);
+    const block = source.slice(start, source.indexOf("\n      },", start));
+    expect(block).toContain("responseHeadersPolicy: noCacheHtmlPolicy");
+  });
+
+  it("serves hashed /assets/* immutably, not with the no-cache policy", () => {
+    const assets = behaviorBlock("/assets/*");
+    expect(assets).toContain("CACHING_OPTIMIZED");
+    expect(assets).not.toContain("noCacheHtmlPolicy");
+  });
+
+  it("gives /content/* the no-cache policy so content edits revalidate", () => {
+    expect(behaviorBlock("/content/*")).toContain("responseHeadersPolicy: noCacheHtmlPolicy");
+  });
+
+  it("does not attach the apex/pretty-URL redirect function to /assets/* or /content/*", () => {
+    // Those are real files with extensions; the redirect/rewrite function belongs only on
+    // the HTML-serving default behavior.
+    expect(behaviorBlock("/assets/*")).not.toContain("functionAssociations");
+    expect(behaviorBlock("/content/*")).not.toContain("functionAssociations");
+  });
+});

@@ -86,6 +86,12 @@ Route53 hosted zone.
 
    Omit it and the Help page still lists the guides but without outbound links. It must be
    an `https` URL. (This is the one setting a fork should point at its _own_ repository.)
+   **Optional presentation text.** Three more optional fields keep site-specific copy out
+   of the source. `homeIntro` is a short paragraph under your name on the home page.
+   `categoryDescriptions` maps a category slug to a one-line description shown on the
+   categories page. `guideSection` (`{ "path": "...", "label": "..." }`) serves standalone
+   Markdown guides at `/<path>/:slug` with a breadcrumb back to `/<path>`. Omit any of them
+   and the corresponding element is simply not shown.
 
 3. **Deploy the stacks.** Content is not needed for this — the stacks are infrastructure,
    not content.

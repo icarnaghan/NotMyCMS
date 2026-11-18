@@ -69,12 +69,7 @@ export function HomePage() {
             <Box variant="h1" textAlign="center">
               {siteConfig.author.name}
             </Box>
-            <Box color="text-body-secondary">
-              Software developer and online educator. I like to tinker with code, break things, and
-              try to keep up with the ever-changing world of web development, DevOps, cloud, AI, and
-              other tech fields. This site is a mix of articles, tutorials, lessons learned, and the
-              occasional academic paper or random notes I've compiled over the years.
-            </Box>
+            {siteConfig.homeIntro && <Box color="text-body-secondary">{siteConfig.homeIntro}</Box>}
             <div style={{ display: "flex", justifyContent: "center" }}>
               <SpaceBetween size="s" direction="horizontal">
                 {SOCIAL_LINKS.map((link) =>

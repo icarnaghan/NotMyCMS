@@ -62,6 +62,13 @@ imported or given a matching removal policy. Needs doing before CDK v3.
   after the `--no-sandbox` fix).
 - Ongoing manual testing with assistive technologies — the automated audit can't
   substitute for it.
+- **Categories and tags are not keyboard accessible.** Both pages navigate through an
+  `onClick` on a `<span>` that wraps a Badge, with no role or tabindex, so keyboard and
+  screen-reader users cannot follow them. Render real links (or buttons). The
+  theme-system baseline snapshots record the current behavior, so this fix will show up
+  as a deliberate snapshot change. Related: two buttons in the article view have no
+  accessible name (probably the code-block copy control, and one in the tools panel);
+  see `.kiro/specs/theme-system/stage-0-findings.md`.
 
 ## Admin — editorial workflow
 
@@ -230,3 +237,20 @@ clutter obscures what is real.
 - **Show `modified` on the content list page.** It currently shows only `date`. A
   sortable "Modified" column would make "what have I touched lately" answerable
   beyond the dashboard's top five. Small, and worth more after the backfill above.
+
+## Framework decoupling
+
+- **Guide-section slugs are hardcoded in build and infra code.** The UI no longer
+  hardcodes the reference site's guide section (it comes from `guideSection` in
+  `site.config.json`), but the three child guide paths are still listed by name in
+  `scripts/build-artifacts.js`, `scripts/generate-meta-pages.js`, `scripts/verify-build.js`,
+  `infra/lambda/deploy/index.ts` and `infra/redirects.json`, with matching tests. They
+  exist because `pages`-type Markdown has no manifest to derive them from. Give that
+  content type a manifest, derive the list from it, and delete the named lists. Changing
+  the deploy Lambda needs a deploy, so do it deliberately.
+- **Test fixtures carry the reference site's content.**
+  `src/pages/landing/test-pages-fixture.ts` and several assertions use real page text.
+  Replace with neutral fixtures so the public snapshot ships none of it.
+- **`check-no-site-strings` only sees config-derived needles.** It missed free-form copy
+  (a bio paragraph, category descriptions, a section label). Consider a review checklist
+  item, or scanning for the known literals now moved into config.

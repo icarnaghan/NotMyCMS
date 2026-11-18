@@ -3,6 +3,7 @@
  *
  * Block-level rendering is covered in `blocks.test.tsx`.
  */
+import { siteConfig } from "../../lib/site-config";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -56,7 +57,7 @@ describe("page metadata", () => {
       page({ seo: { title: "Teaching", description: "d" }, header: { title: "Classes I Teach" } })
     );
 
-    expect(document.title).toBe("Teaching | Ian Carnaghan");
+    expect(document.title).toBe(`Teaching | ${siteConfig.siteName}`);
   });
 
   it("renders blocks in order", () => {

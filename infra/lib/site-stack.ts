@@ -210,16 +210,18 @@ export class SiteStack extends cdk.Stack {
       },
     });
 
-    // The admin SPA's HTML entry point must never be cached long-term. It names the
-    // current hashed bundle (e.g. assets/index-<hash>.js), and every admin deploy ships
-    // a new hash and prunes the old asset. If a visitor keeps a cached index.html, it
-    // asks for a bundle that no longer exists — the "Both UserPoolId and ClientId are
-    // required" white screen we hit when the Cognito config first shipped. Force a
-    // revalidation on every load so the browser always learns the new bundle hash.
+    // Revalidate-on-every-load policy for the mutable entry points: the public SPA shell
+    // and prerendered heads (the default behavior), the admin shell (`/admin/*`), and the
+    // content/manifest files (`/content/*`). All of these name a current hashed bundle or
+    // carry content that changes in place, so a long browser cache makes a deploy or a
+    // content edit invisible until it expires — the "only shows up in incognito" symptom,
+    // and the admin "Both UserPoolId and ClientId are required" white screen before it.
     //
     // S3 objects carry no Cache-Control of their own, so without this CloudFront's
-    // CACHING_OPTIMIZED policy caches the HTML for its default TTL. `override: true`
-    // makes CloudFront stamp the header regardless of (absent) origin value.
+    // CACHING_OPTIMIZED policy caches them for its default TTL. `override: true` makes
+    // CloudFront stamp the header regardless of (absent) origin value. `no-cache` means
+    // "revalidate before using", not "never cache" — the edge still caches and serves
+    // after a cheap conditional check, so this is correctness without killing the CDN.
     const noCacheHtmlPolicy = new cloudfront.ResponseHeadersPolicy(this, "AdminHtmlHeaders", {
       securityHeadersBehavior: {
         contentTypeOptions: { override: true },
@@ -247,11 +249,20 @@ export class SiteStack extends cdk.Stack {
     });
 
     const distribution = new cloudfront.Distribution(this, "Distribution", {
+      // The default behavior serves the HTML entry points: the SPA shell (index.html) and
+      // the prerendered per-page `<slug>/index.html` heads. Like the admin shell, these
+      // name the current hashed bundle and carry per-page content, so they must revalidate
+      // rather than sit in a browser cache for CloudFront's default TTL — otherwise a code
+      // deploy (new bundle hash) or a content edit is invisible until the cached HTML
+      // expires, which is the "I only see changes in incognito" symptom. Hashed assets are
+      // carved out into the immutable `/assets/*` behavior below, so no-cache here costs
+      // nothing on the fast path. `no-cache` means revalidate, not "don't cache" —
+      // CloudFront still serves from the edge after a cheap conditional check.
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(bucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        responseHeadersPolicy,
+        responseHeadersPolicy: noCacheHtmlPolicy,
         functionAssociations: [
           {
             function: redirectFunction,
@@ -349,6 +360,31 @@ export class SiteStack extends cdk.Stack {
           eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
         },
       ],
+    });
+
+    // /assets/* behavior — the public site's hashed JS/CSS bundles. Content-addressed
+    // (the filename changes when the bytes change), so safe to cache forever. Carved out
+    // from the default behavior (which is now no-cache) so the fast path stays cached, and
+    // declared without the apex/pretty-URL redirect function: asset paths have extensions
+    // and must be served as-is, never rewritten.
+    distribution.addBehavior("/assets/*", origins.S3BucketOrigin.withOriginAccessControl(bucket), {
+      viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      responseHeadersPolicy,
+    });
+
+    // /content/* behavior — the manifests, landing-page JSON, and post/article markdown
+    // that the SPA fetches at runtime. These change in place on every content edit (a new
+    // post, an edited apps page), with no hash in the filename, so a browser that caches
+    // them heuristically keeps showing stale content after a publish — the content half of
+    // the "only shows up in incognito" problem. no-cache makes the browser revalidate, so
+    // an edit is visible on the next load. The Reconcile_Job already invalidates the edge;
+    // this closes the browser-cache gap it can't reach. No redirect function: these are
+    // real files, not SPA routes.
+    distribution.addBehavior("/content/*", origins.S3BucketOrigin.withOriginAccessControl(bucket), {
+      viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      responseHeadersPolicy: noCacheHtmlPolicy,
     });
 
     // /api/* behavior — routes to API Gateway HTTP API origin

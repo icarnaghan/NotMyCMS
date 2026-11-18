@@ -122,6 +122,36 @@ export function validateSiteConfig(config) {
     }
   }
 
+  // Optional presentation text. Kept in config so the framework source holds no
+  // site-specific copy.
+  if (config.homeIntro !== undefined && !isNonEmptyString(config.homeIntro)) {
+    problems.push("homeIntro must be a non-empty string when present");
+  }
+  if (config.categoryDescriptions !== undefined) {
+    const d = config.categoryDescriptions;
+    if (typeof d !== "object" || d === null || Array.isArray(d)) {
+      problems.push("categoryDescriptions must be an object of slug to text when present");
+    } else {
+      for (const [slug, text] of Object.entries(d)) {
+        if (!isNonEmptyString(text)) {
+          problems.push(`categoryDescriptions.${slug} must be a non-empty string`);
+        }
+      }
+    }
+  }
+  if (config.guideSection !== undefined) {
+    const g = config.guideSection;
+    if (typeof g !== "object" || g === null) {
+      problems.push("guideSection must be an object with path and label when present");
+    } else {
+      if (!isNonEmptyString(g.label)) problems.push("guideSection.label is required");
+      if (!isNonEmptyString(g.path) || !/^[a-z0-9]+(?:[-/][a-z0-9]+)*$/.test(g.path)) {
+        problems.push(
+          "guideSection.path must be lowercase segments with no leading or trailing slash"
+        );
+      }
+    }
+  }
   if (!config.git || typeof config.git !== "object") {
     problems.push("git is required");
   } else {
