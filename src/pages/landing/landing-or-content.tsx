@@ -19,11 +19,12 @@
  * manifest to settle (ready or error) before falling through to the post path.
  */
 import { useParams } from "react-router-dom";
-import Box from "@cloudscape-design/components/box";
-import Spinner from "@cloudscape-design/components/spinner";
 import { usePages } from "./pages-context";
 import { RegistryPage } from "./registry-route";
-import { ContentPage } from "../../components/content-renderer";
+import { ContentPage } from "../../core/pages/article-route";
+import activeTheme from "@theme";
+
+const Loading = activeTheme.Loading;
 
 export function LandingOrContent() {
   const params = useParams();
@@ -36,11 +37,7 @@ export function LandingOrContent() {
   // Manifest still loading: hold rather than render a post that might turn out to be a
   // landing page once the manifest arrives.
   if (status === "loading") {
-    return (
-      <Box textAlign="center" padding="xxl">
-        <Spinner size="large" />
-      </Box>
-    );
+    return <Loading centered />;
   }
 
   if (pageBySlug(slug)) {

@@ -9,13 +9,14 @@
  * than throws, so a caller can report every problem at once instead of one per run.
  */
 
+import { listThemes } from "./resolve-theme.js";
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 
 function isNonEmptyString(v) {
   return typeof v === "string" && v.trim() !== "";
 }
 
-export function validateSiteConfig(config) {
+export function validateSiteConfig(config, { themes = listThemes() } = {}) {
   const problems = [];
   const require = (path, value, extra) => {
     if (!isNonEmptyString(value)) {
@@ -122,6 +123,11 @@ export function validateSiteConfig(config) {
     }
   }
 
+  // Optional. Which visual theme the build uses; valid names are the directories under
+  // src/themes/. The THEME environment variable overrides it at build time.
+  if (config.theme !== undefined && !themes.includes(config.theme)) {
+    problems.push(`theme must be one of: ${themes.join(", ")}`);
+  }
   // Optional presentation text. Kept in config so the framework source holds no
   // site-specific copy.
   if (config.homeIntro !== undefined && !isNonEmptyString(config.homeIntro)) {

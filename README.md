@@ -41,9 +41,10 @@ of the ways content gets into git.
 
 - React 19 + TypeScript
 - Vite
-- Cloudscape Design System
+- Two themes behind one contract: Cloudscape Design System (default) and Tailwind CSS,
+  chosen at build time
 - React Router v7
-- React Markdown + Cloudscape CodeView (dynamic syntax highlighting)
+- React Markdown with per-theme syntax highlighting (Cloudscape CodeView, or lowlight for Tailwind)
 - Fuse.js full-text fuzzy search
 - gray-matter for YAML frontmatter parsing (build-time)
 - AWS CDK — public site (S3 + CloudFront + ACM + Route53) and admin backend
@@ -113,8 +114,13 @@ empty site. The full first-time path — cloning the Content_Repo, credentials, 
 variables — is in **[Setup](docs/setup.md)**. Run `make` to see every target.
 
 Site identity and presentation (domain, titles, author, social links, analytics,
-`docsBaseUrl` for the admin's Help links) all live in **`site.config.json`**; the full
-field list and which are required are covered in [Setup](docs/setup.md).
+`docsBaseUrl` for the admin's Help links, and the `theme`) all live in
+**`site.config.json`**; the full field list and which are required are covered in
+[Setup](docs/setup.md).
+
+The site's look is a **theme**, chosen at build time with `"theme": "cloudscape"` (the
+default) or `"tailwind"`. `THEME=tailwind make dev` previews one without editing config. See
+[Themes](docs/themes.md) for how themes work and how to write one.
 
 ## Build & Deploy
 
@@ -147,6 +153,8 @@ First-time setup of a new account also needs `cd infra && npx cdk bootstrap`.
 ## Documentation
 
 - [Setup](docs/setup.md) — stand the whole thing up from scratch: both repos, all four credentials, CI variables, local dev
+- [Status](docs/status.md) — what is built, what is next, known limits
+- [Themes](docs/themes.md) — choosing a theme, the contract between the core and a theme, writing a new one
 - [Architecture](docs/architecture.md) — system design, component architecture, data flow, routing
 - [Developer Guide](docs/developer-guide.md) — day-to-day development, adding content, project conventions
 - [Infrastructure](infra/README.md) — CDK deployment to S3 + CloudFront + Route53

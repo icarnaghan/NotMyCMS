@@ -13,11 +13,12 @@
  *     throw (requirement 1.6). A single page failing must not take down the app.
  */
 import { useEffect, useState } from "react";
-import Spinner from "@cloudscape-design/components/spinner";
-import Box from "@cloudscape-design/components/box";
 import type { LandingPage } from "../../lib/page-schema";
-import { NotFoundPage } from "../not-found/not-found-page";
-import { LandingPageView } from "./landing-page";
+import { NotFoundRoute } from "../../core/pages/not-found-route";
+import { LandingPageView } from "../../core/pages/landing-route";
+import activeTheme from "@theme";
+
+const Loading = activeTheme.Loading;
 
 type FetchState =
   | { status: "loading"; slug: string }
@@ -62,15 +63,11 @@ export function RegistryPage({ slug }: { slug: string }) {
   const current: FetchState = state.slug === slug ? state : { status: "loading", slug };
 
   if (current.status === "loading") {
-    return (
-      <Box textAlign="center" padding="xxl">
-        <Spinner size="large" />
-      </Box>
-    );
+    return <Loading centered />;
   }
 
   if (current.status === "missing") {
-    return <NotFoundPage slug={slug} />;
+    return <NotFoundRoute slug={slug} />;
   }
 
   return <LandingPageView page={current.page} />;

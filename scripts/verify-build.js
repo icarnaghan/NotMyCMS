@@ -16,7 +16,10 @@
  * of hardcoding the domain, and so the head assertions can be expressed readably.
  */
 import { existsSync, readdirSync, readFileSync } from "fs";
+import { join } from "path";
+import { pathToFileURL } from "url";
 import { siteConfig } from "./site-config.js";
+import { resolveTheme } from "./resolve-theme.js";
 
 const DIST = "dist";
 
@@ -170,22 +173,18 @@ const allCss = cssFiles.map((f) => readFileSync(`${DIST}/assets/${f}`, "utf-8"))
 // Minification removes whitespace around selector combinators, so compare without it.
 const cssNoSpace = allCss.replace(/\s+/g, "");
 
-for (const [label, needle] of [
-  // Reproduces the padding and margin Cloudscape's Box variant="p" and SpaceBetween
-  // gave the markup these blocks replaced. Measured against the original components:
-  // without the padding every page sits 8px high, and without the margin stacked
-  // paragraphs drift 2px apart each.
-  ["paragraph box", ".landing-prose p{margin-block:0;padding-block:4px}"],
-  ["stacked paragraph gap", ".landing-prose p+p{margin-block-start:"],
-]) {
+// What to look for is declared by the active theme, in `build-assertions.js` beside its
+// views. A theme with nothing to assert simply has no such file.
+const theme = resolveTheme(siteConfig);
+const assertionsPath = join(process.cwd(), "src", "themes", theme, "build-assertions.js");
+const cssAssertions = existsSync(assertionsPath)
+  ? (await import(pathToFileURL(assertionsPath).href)).cssAssertions
+  : [];
+for (const { label, needle, consequence } of cssAssertions) {
   if (!cssNoSpace.includes(needle.replace(/\s+/g, ""))) {
-    fail(
-      `the prose spacing rule for ${label} is missing from the built CSS`,
-      "without it every landing-page prose block regains the default paragraph margin"
-    );
+    fail(`the ${label} rule is missing from the built CSS`, consequence);
   }
 }
-
 // --- robots.txt ---
 // Generated rather than checked in, so it can go missing without anyone noticing until
 // a crawler stops finding the sitemap.

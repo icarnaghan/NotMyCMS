@@ -30,6 +30,22 @@ function valid(overrides = {}) {
   };
 }
 
+describe("validateSiteConfig theme", () => {
+  const themes = ["cloudscape", "tailwind"];
+  it("accepts a known theme and its absence", () => {
+    expect(validateSiteConfig(valid({ theme: "tailwind" }), { themes })).toEqual([]);
+    expect(validateSiteConfig(valid(), { themes })).toEqual([]);
+  });
+  it("rejects an unknown theme and lists the valid ones", () => {
+    expect(validateSiteConfig(valid({ theme: "neon" }), { themes })).toEqual([
+      "theme must be one of: cloudscape, tailwind",
+    ]);
+  });
+  it("accepts the example config", () => {
+    const example = JSON.parse(readFileSync("site.config.example.json", "utf-8"));
+    expect(validateSiteConfig(example, { themes })).toEqual([]);
+  });
+});
 describe("validateSiteConfig optional presentation fields", () => {
   it("accepts homeIntro, categoryDescriptions and guideSection", () => {
     const cfg = valid({

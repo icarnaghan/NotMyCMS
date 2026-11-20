@@ -1,0 +1,22 @@
+<script>
+  // Tailwind theme: apply color mode and text size before first paint, so a dark-mode
+  // visitor never sees a white flash. Mirrors apply-settings.ts and the storage keys in
+  // src/lib/settings-preferences.ts.
+  try {
+    var mode = localStorage.getItem("{{STORAGE_PREFIX}}-theme");
+    if (mode !== "light" && mode !== "dark" && mode !== "system") {
+      var legacy = localStorage.getItem("blog-dark-mode");
+      mode = legacy === "true" ? "dark" : legacy === "false" ? "light" : "system";
+    }
+    var dark =
+      mode === "dark" ||
+      (mode === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", dark);
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    var size = localStorage.getItem("{{STORAGE_PREFIX}}-text-size");
+    if (size === "large") document.documentElement.style.fontSize = "112.5%";
+    if (size === "larger") document.documentElement.style.fontSize = "125%";
+  } catch (e) {
+    /* storage unavailable: the app applies the defaults once it starts */
+  }
+</script>

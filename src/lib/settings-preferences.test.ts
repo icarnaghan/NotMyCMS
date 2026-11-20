@@ -6,6 +6,7 @@ import {
   applyAnalyticsOptOut,
   loadAnalyticsOptOut,
   loadDensityPreference,
+  loadTextSizePreference,
   loadThemePreference,
   prefersDark,
   readStoredValue,
@@ -199,6 +200,21 @@ describe("analytics opt-out", () => {
     // The inline script in index.html hardcodes this key so the opt-out applies
     // before gtag loads; keep them in sync.
     expect(STORAGE_KEYS.analyticsOptOut).toBe(`${siteConfig.storagePrefix}-analytics-opt-out`);
+  });
+});
+
+describe("loadTextSizePreference", () => {
+  it("defaults to the stock size", () => {
+    stubStorage();
+    expect(loadTextSizePreference()).toBe("default");
+  });
+  it("returns a stored size", () => {
+    stubStorage({ [STORAGE_KEYS.textSize]: "larger" });
+    expect(loadTextSizePreference()).toBe("larger");
+  });
+  it("ignores an unrecognized value", () => {
+    stubStorage({ [STORAGE_KEYS.textSize]: "gigantic" });
+    expect(loadTextSizePreference()).toBe("default");
   });
 });
 

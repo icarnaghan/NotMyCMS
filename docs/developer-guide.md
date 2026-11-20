@@ -273,7 +273,7 @@ projects.
 
 Theme (Light/Dark/System), density, and the analytics opt-out live in
 `src/lib/settings-preferences.ts` (pure, unit-tested helpers) and are applied by
-`src/lib/settings-context.tsx`. The admin mirrors these at `admin/src/lib/`.
+`src/core/settings-context.tsx` through the active theme. The admin mirrors these at `admin/src/lib/`.
 
 Two things to know when changing them:
 
@@ -361,9 +361,9 @@ rendered by `src/pages/landing/`. `/about`, `/apps`, `/bitesize-javascript`,
 
 Page data carries **semantic** values, not renderer values — `tone: "active"`
 rather than `badgeColor: "green"`, `columns` rather than `cardsPerRow`. The
-mapping from semantics to Cloudscape lives entirely in
-`src/pages/landing/tone.ts`, which with `block-registry.ts` is the seam to change
-if the component library ever does.
+mapping from semantics to a look lives in each theme
+(`src/themes/<name>/`), which is the seam to change if the component library ever
+does. See [Themes](themes.md).
 
 `node scripts/validate-page.js` (run by `make check`) validates every page file
 and **fails** on an unknown block type or field. The runtime renderer instead

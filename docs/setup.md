@@ -92,6 +92,10 @@ Route53 hosted zone.
    categories page. `guideSection` (`{ "path": "...", "label": "..." }`) serves standalone
    Markdown guides at `/<path>/:slug` with a breadcrumb back to `/<path>`. Omit any of them
    and the corresponding element is simply not shown.
+   **Optional: `theme`.** The site's visual design, chosen at build time: `"cloudscape"`
+   (the default) or `"tailwind"`. Leave it out for Cloudscape. The `THEME` environment
+   variable overrides it, so `make build THEME=tailwind` builds that theme without editing
+   the file. See [Themes](themes.md).
 
 3. **Deploy the stacks.** Content is not needed for this — the stacks are infrastructure,
    not content.

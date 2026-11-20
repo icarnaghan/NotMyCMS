@@ -99,6 +99,11 @@ export interface SiteConfig {
    * this at its own repository's docs.
    */
   docsBaseUrl?: string;
+  /**
+   * Visual theme, resolved at build time. Names are the directories under `src/themes/`.
+   * Defaults to `"cloudscape"`. The `THEME` environment variable overrides it.
+   */
+  theme?: string;
   /** A short paragraph under the name on the home page. Omit for none. */
   homeIntro?: string;
   /** One-line descriptions shown on the categories page, keyed by category slug. */

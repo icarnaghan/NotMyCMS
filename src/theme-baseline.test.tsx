@@ -18,7 +18,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { a11yTree } from "./test/a11y-tree";
-import { TEST_PAGES, TEST_PAGES_MANIFEST } from "./pages/landing/test-pages-fixture";
+import { mockFetch } from "./test/site-fixtures";
 
 /**
  * Pin the site identity so the snapshots do not depend on which site.config.json is
@@ -45,100 +45,6 @@ vi.mock("./lib/site-config", async (importOriginal) => {
   };
 });
 
-const CATEGORIES = ["coding", "wordpress", "hosting", "seo"];
-const TAGS = ["react", "aws", "php", "css", "seo", "linux"];
-
-/** Deterministic manifest entries. 45 posts gives three pages at the 20-per-page size. */
-function makeEntries(prefix: string, count: number) {
-  return Array.from({ length: count }, (_, i) => {
-    const n = String(i + 1).padStart(2, "0");
-    return {
-      slug: `${prefix}-${n}`,
-      title: `${prefix === "post" ? "Post" : "Guide"} number ${n}`,
-      date: `2024-${String((i % 12) + 1).padStart(2, "0")}-15T00:00:00.000Z`,
-      description: `Description for ${prefix} ${n}.`,
-      excerpt: `Excerpt for ${prefix} ${n}.`,
-      categories: CATEGORIES[i % CATEGORIES.length],
-      tags: [TAGS[i % TAGS.length], TAGS[(i + 2) % TAGS.length]],
-    };
-  });
-}
-const POSTS = makeEntries("post", 45);
-const KB = makeEntries("guide", 30);
-
-const MARKDOWN = `---
-title: A Rich Article
-date: 2024-03-15
-categories: coding
-tags: [react, aws]
----
-
-Intro paragraph with a [link](https://example.com) and **bold** text.
-
-## First section
-
-Some text.
-
-### A subsection
-
-- one
-- two
-
-\`\`\`ts
-const answer: number = 42;
-\`\`\`
-
-| Name | Value |
-| ---- | ----- |
-| a    | 1     |
-
-## Second section
-
-![Alt text](pic.png)
-`;
-
-function json(body: unknown) {
-  return new Response(JSON.stringify(body), {
-    status: 200,
-    headers: { "content-type": "application/json" },
-  });
-}
-
-function mockFetch() {
-  return vi.fn((input: RequestInfo | URL) => {
-    const url = String(input);
-    if (url.endsWith("/content/posts/manifest.json")) return Promise.resolve(json(POSTS));
-    if (url.endsWith("/content/knowledge-base/manifest.json")) return Promise.resolve(json(KB));
-    if (url.endsWith("/content/pages/manifest.json")) {
-      return Promise.resolve(json(TEST_PAGES_MANIFEST));
-    }
-    if (url === "/search-index.json") {
-      return Promise.resolve(
-        json([
-          ...POSTS.map((p) => ({ ...p, basePath: "posts" })),
-          ...KB.map((p) => ({ ...p, basePath: "knowledge-base" })),
-        ])
-      );
-    }
-    const pageMatch = url.match(/\/content\/pages\/(.+)\/page\.json$/);
-    if (pageMatch) {
-      const page = TEST_PAGES.find((p) => p.slug === pageMatch[1]);
-      return Promise.resolve(page ? json(page) : new Response("not found", { status: 404 }));
-    }
-    const md = url.match(/\/content\/(posts|knowledge-base|pages)\/(.+)\/index\.md$/);
-    if (md) {
-      // A slug beginning "missing" simulates content that does not exist.
-      if (md[2].startsWith("missing")) {
-        return Promise.resolve(new Response("not found", { status: 404 }));
-      }
-      return Promise.resolve(
-        new Response(MARKDOWN, { status: 200, headers: { "content-type": "text/markdown" } })
-      );
-    }
-    return Promise.resolve(new Response("not found", { status: 404 }));
-  });
-}
-
 /**
  * Wait until the rendered structure stops changing and contains a level-1 heading.
  * Generic on purpose: each route settles on different elements, and lazy chunks and
@@ -156,7 +62,7 @@ async function settledTree(): Promise<string> {
         throw new Error("not settled");
       }
     },
-    { timeout: 8000, interval: 40 }
+    { timeout: 15000, interval: 40 }
   );
   return last;
 }
@@ -192,7 +98,9 @@ const ROUTES: string[] = [
   "/missing-post-slug",
 ];
 
-describe("theme baseline", () => {
+// Each test waits up to 15s for the page to settle, so the per-test limit must exceed that.
+// Under a parallel full-suite run the first render, which loads Cloudscape cold, is slow.
+describe("theme baseline", { timeout: 30000 }, () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", mockFetch());
     vi.stubGlobal(

@@ -78,7 +78,7 @@ link-content: ## Symlink the Content_Repo clone into public/content for local de
 	ln -s "$(CONTENT_REPO)/content" public/content
 	CONTENT_ROOT=public/content node scripts/generate-manifest.js
 
-dev: link-content ## Run the site dev server (links content first)
+dev: link-content ## Run the site dev server (links content first). THEME=tailwind previews that theme
 	npm run dev
 
 dev-admin: ## Run the admin dev server
@@ -128,7 +128,7 @@ scan: ## Run the AWS automated-security-helper scan locally
 
 # --- Build ---
 
-build: ## Generate manifests then build the site (order matters — see header)
+build: ## Generate manifests then build the site. THEME=tailwind builds that theme (order matters — see header)
 	CONTENT_ROOT=$(CONTENT_REPO)/content node scripts/generate-manifest.js
 	npm run build
 

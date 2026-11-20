@@ -71,7 +71,7 @@ export default function App() {
             items: [
               {
                 id: "theme",
-                text: "Theme",
+                text: "Color mode",
                 items: [
                   {
                     id: "theme-light",

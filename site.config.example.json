@@ -10,6 +10,7 @@
   "siteName": "Your Name",
   "siteTitle": "example.com",
   "adminTitle": "NotMyCMS",
+  "theme": "cloudscape",
   "tagline": "A short descriptor shown in page headers",
   "siteDescription": "A longer sentence used for the RSS feed and meta description",
   "locale": "en-us",

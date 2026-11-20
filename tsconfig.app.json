@@ -23,7 +23,14 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    /* Mirrors the `@theme` alias in vite.config.ts. Type-checking always uses the default
+       theme; every theme must satisfy the same `Theme` type. */
+    "baseUrl": ".",
+    "paths": {
+      "@theme": ["./src/themes/cloudscape/index.ts"],
+      "@theme/*": ["./src/themes/cloudscape/*"]
+    }
   },
   /* site.config.d.ts is listed so the SiteConfig type resolves from src/. */
   "include": ["src", "site.config.d.ts"]

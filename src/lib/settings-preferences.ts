@@ -12,6 +12,7 @@
  */
 
 import { siteConfig, storageKey } from "./site-config";
+import { isTextSize, type TextSizePreference } from "./text-size";
 
 export type ThemePreference = "light" | "dark" | "system";
 export type DensityPreference = "comfortable" | "compact";
@@ -32,6 +33,7 @@ export const GA_MEASUREMENT_ID = siteConfig.analytics?.measurementId;
 export const STORAGE_KEYS = {
   theme: storageKey("theme"),
   density: storageKey("density"),
+  textSize: storageKey("text-size"),
   analyticsOptOut: storageKey("analytics-opt-out"),
 } as const;
 
@@ -110,6 +112,12 @@ export function loadDensityPreference(): DensityPreference {
   if (legacy === "true") return "compact";
 
   return "comfortable";
+}
+
+/** Load the stored text size. Anything unrecognized falls back to the default. */
+export function loadTextSizePreference(): TextSizePreference {
+  const stored = readStoredValue(STORAGE_KEYS.textSize);
+  return isTextSize(stored) ? stored : "default";
 }
 
 /** Whether the visitor has opted out of analytics. Defaults to opted in. */

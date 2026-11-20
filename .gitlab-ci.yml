@@ -199,6 +199,29 @@ a11y:
     - if: $CI_COMMIT_BRANCH == "main"
   allow_failure: true
 
+# Non-default theme (advisory). Builds the site with the Tailwind theme, runs the same
+# build verification, and audits accessibility, so a change that breaks that theme is
+# noticed even though the live site uses the default. It never feeds the deploy job.
+# allow_failure keeps it from blocking, consistent with the other advisory jobs; the
+# component tests for both themes already run in the blocking `test` stage.
+build-tailwind:
+  extends: build
+  variables:
+    CONTENT_ROOT: content-repo/content
+    THEME: tailwind
+  script:
+    - git clone --depth 1 --branch main "${CONTENT_REPO_URL}" content-repo
+    - node scripts/generate-manifest.js
+    - npm run build
+    - node scripts/verify-build.js
+    # A Tailwind build must not contain any Cloudscape code.
+    - "! grep -rlE 'awsui|@cloudscape-design' dist/assets"
+  allow_failure: true
+a11y-tailwind:
+  extends: a11y
+  needs:
+    - build-tailwind
+  allow_failure: true
 # ── Deploy ───────────────────────────────────────────────────────────────────
 
 deploy:

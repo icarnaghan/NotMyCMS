@@ -22,7 +22,7 @@ export default function SettingsPage() {
       <Container header={<Header variant="h2">Appearance</Header>}>
         <SpaceBetween size="l">
           <FormField
-            label="Theme"
+            label="Color mode"
             description={
               theme === "system"
                 ? `Following your device preference (currently ${resolvedTheme}).`

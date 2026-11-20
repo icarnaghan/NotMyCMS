@@ -1,0 +1,5 @@
+/*
+ * Cloudscape's global styles: design tokens, color modes and density. Imported first, ahead
+ * of any component, exactly where App.tsx used to import it.
+ */
+@import "@cloudscape-design/global-styles/index.css";

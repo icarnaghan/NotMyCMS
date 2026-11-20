@@ -69,6 +69,10 @@ imported or given a matching removal policy. Needs doing before CDK v3.
   as a deliberate snapshot change. Related: two buttons in the article view have no
   accessible name (probably the code-block copy control, and one in the tools panel);
   see `.kiro/specs/theme-system/stage-0-findings.md`.
+  Lighthouse (Cloudscape theme, local run) confirms it: `/posts/` scores 91, with four
+  unnamed buttons (the pagination arrows and preferences controls) and two tap targets
+  under the minimum size; an article scores 94, with one unnamed button. The Tailwind
+  theme scores 100 on the same pages.
 
 ## Admin — editorial workflow
 

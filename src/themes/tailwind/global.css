@@ -1,0 +1,21 @@
+/*
+ * Tailwind theme entry. `source(none)` plus the `@source` below limits class scanning to
+ * this theme's own files, so class-like strings elsewhere in the repository (the Cloudscape
+ * theme, the admin) never generate CSS here.
+ */
+@import "tailwindcss" source(none);
+@source "./";
+@plugin "@tailwindcss/typography";
+
+/* Dark mode follows a `dark` class on <html>, set by apply-settings.ts and head.html. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  html {
+    @apply bg-white text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100;
+  }
+  /* Keyboard focus is always visible, in both modes. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-indigo-600 dark:outline-indigo-400;
+  }
+}

@@ -7,11 +7,15 @@
  * are the large majority.
  */
 import "@testing-library/jest-dom/vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach, expect } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 
 expect.extend(matchers);
+// The default 1s for findBy*/waitFor is too tight when the suite runs in parallel and a
+// route has to load Cloudscape lazily. A passing test does not wait longer; only a
+// failing one takes up to the limit to report.
+configure({ asyncUtilTimeout: 15000 });
 
 // RTL only auto-cleans when a global `afterEach` exists, which depends on
 // `globals: true`. This project does not set that, so unmount explicitly — otherwise

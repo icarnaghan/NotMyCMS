@@ -54,34 +54,29 @@ writes the generated artifacts into `public/`:
 ├── src/
 │   ├── App.tsx                  # Root: routing, navigation, settings
 │   ├── main.tsx                 # Entry point
-│   ├── components/
-│   │   ├── page-layout.tsx      # AppLayout wrapper for static pages
-│   │   ├── content-list.tsx     # Reusable data table (posts listing)
-│   │   ├── content-renderer.tsx # Markdown renderer with TOC + code highlighting
-│   │   ├── related-posts.tsx   # Related posts based on shared tags/categories
-│   │   └── search.tsx           # Global fuzzy search modal
+│   ├── core/                    # Headless logic shared by every theme (no UI library)
+│   │   ├── article.ts           # Fetch/parse articles, table of contents, heading ids
+│   │   ├── content-list.ts      # Filter, sort, page, URL-held list state
+│   │   ├── search.ts            # Search index and matching
+│   │   ├── related-posts.ts     # Related-post scoring
+│   │   ├── navigation.ts        # Nav order, guide route, page-view tracking
+│   │   ├── settings-context.tsx # Color mode, density, text size, analytics opt-out
+│   │   ├── landing-blocks.tsx   # Skip unknown blocks, contain failing ones
+│   │   └── pages/               # Build each page's view model, render via the theme
+│   ├── themes/
+│   │   ├── types.ts             # The contract a theme implements
+│   │   ├── cloudscape/          # Default theme: views, styles, settings, block renderers
+│   │   └── tailwind/            # Second theme (see docs/themes.md)
+│   ├── conformance/             # Behavior tests that run against every theme
 │   ├── lib/
-│   │   ├── settings-preferences.ts # Theme/density/analytics prefs + safe storage
-│   │   ├── settings-context.tsx    # Applies preferences via Cloudscape
+│   │   ├── settings-preferences.ts # Preferences + safe storage (shared keys with the admin)
 │   │   ├── content.ts           # PostMeta type + fetchManifest() with error handling
 │   │   ├── frontmatter.tsx      # Lightweight browser-side YAML frontmatter parser
 │   │   ├── use-document-title.ts # Dynamic document title hook
-│   │   ├── settings-context.tsx # Dark mode + density context (localStorage)
+│   │   ├── text-size.ts         # Visitor text-size choices
 │   │   └── social-links.tsx     # Social media link data
-│   ├── pages/
-│   │   ├── landing/             # Generic renderer for every landing page
-│   │   │   ├── landing-page.tsx # Walks a page's blocks
-│   │   │   ├── block-registry.ts# Block type → component
-│   │   │   ├── blocks/          # One component per block type
-│   │   │   ├── prose.tsx        # Markdown for blocks (no raw HTML)
-│   │   │   └── tone.ts          # Semantic values → Cloudscape values
-│   │   ├── home/
-│   │   ├── posts/
-│   │   ├── knowledge-base/
-│   │   ├── categories/
-│   │   ├── tags/
-│   │   └── not-found/
-│   └── styles.css               # Global styles, incl. landing-page prose spacing
+│   └── pages/
+│       └── landing/             # Runtime page registry: manifest, routes, the pages context
 ├── site/
 │   └── pages/                   # Landing pages as data — the directory a
 │       ├── index.js             # framework consumer owns
@@ -226,7 +221,9 @@ managed by a settings context in each app:
   during initial render, an unguarded throw would blank the page.
 
 Implementation: `src/lib/settings-preferences.ts` (pure helpers, unit tested) and
-`src/lib/settings-context.tsx`, mirrored at `admin/src/lib/`. The admin module
+`src/core/settings-context.tsx`, with `admin/src/lib/settings-preferences.ts` mirroring the
+helpers. The active theme applies the result to the document (`applySettings`), and declares
+which settings it supports. The storage keys are the same under every theme. The admin module
 omits the analytics helpers. **The two preference modules must be kept in sync.**
 
 ## Testing
@@ -385,8 +382,10 @@ Stored pages say `tone: "active"`, not `color: "green"`; `columns: 2`, not `card
 Both of the rejected forms were Cloudscape's own vocabulary — `cardsPerRow` is literally
 the name of a Cloudscape `Cards` prop.
 
-`src/pages/landing/tone.ts` holds the entire mapping. That file plus `block-registry.ts`
-is what a theme would replace: same JSON, different renderers. Baking a component
+Each theme holds its own mapping (`src/themes/cloudscape/tone.ts` and
+`block-registry.ts`; the Tailwind equivalents are in `src/themes/tailwind/blocks.tsx`).
+That is what a theme replaces: same JSON, different renderers. See
+[Themes](themes.md#adding-a-landing-page-block-type). Baking a component
 library's vocabulary into stored content would mean that changing renderer later requires
 migrating content, and once pages are admin-edited and published, migrating stored
 content is the expensive kind of change.
@@ -399,10 +398,10 @@ stored and published.
 
 This asymmetry is deliberate. It is not an inconsistency to be tidied up later.
 
-|                                                | Behaviour on an unknown block type or field                        |
-| ---------------------------------------------- | ------------------------------------------------------------------ |
-| `scripts/validate-page.js` (build)             | **Fails.** Named in the error: page slug, block id, field path.    |
-| `src/pages/landing/landing-page.tsx` (runtime) | **Skips and warns.** A render error is contained to its own block. |
+|                                         | Behaviour on an unknown block type or field                        |
+| --------------------------------------- | ------------------------------------------------------------------ |
+| `scripts/validate-page.js` (build)      | **Fails.** Named in the error: page slug, block id, field path.    |
+| `src/core/landing-blocks.tsx` (runtime) | **Skips and warns.** A render error is contained to its own block. |
 
 The build-time validator is strict so this repository's own content cannot be quietly
 wrong — a typo in a block type should stop a deploy, not ship a page with a missing
@@ -422,8 +421,9 @@ disappears.
 
 ### Prose blocks do not render raw HTML
 
-`prose`, `columns` and `panel` render markdown through `src/pages/landing/prose.tsx`,
-which deliberately omits `rehype-raw`. `content-renderer.tsx` enables it, which is
+`prose`, `columns` and `panel` render markdown through each theme's `prose.tsx`, which
+deliberately omits `rehype-raw`. The article renderer (`src/core/pages/article-route.tsx`)
+enables it, which is
 defensible for post markdown — that only arrives through a reviewed git commit — but not
 for block prose, which becomes untrusted input the moment the admin can edit it. A
 `<script>` in a prose field renders as text.
@@ -433,8 +433,8 @@ Internal markdown links route client-side; external ones get `target="_blank"` w
 
 ### Spacing
 
-`src/styles.css` gives markdown paragraphs inside a prose block the padding and margin
-Cloudscape's `Box variant="p"` and `SpaceBetween` gave the markup they replaced: `4px`
+In the Cloudscape theme, `src/themes/cloudscape/styles.css` gives markdown paragraphs inside
+a prose block the padding and margin Cloudscape's `Box variant="p"` and `SpaceBetween` gave the markup they replaced: `4px`
 vertical padding, and a `12px` gap between stacked paragraphs. Without those, every
 landing page sits 8px high and stacked paragraphs drift 2px apart each.
 

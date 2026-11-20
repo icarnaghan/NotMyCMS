@@ -1,43 +1,21 @@
-import "@cloudscape-design/global-styles/index.css";
-import { lazy, Suspense, useEffect, useState } from "react";
-import TopNavigation from "@cloudscape-design/components/top-navigation";
-import Modal from "@cloudscape-design/components/modal";
-import Box from "@cloudscape-design/components/box";
-import Button from "@cloudscape-design/components/button";
-import SpaceBetween from "@cloudscape-design/components/space-between";
-import Spinner from "@cloudscape-design/components/spinner";
+import { lazy, Suspense } from "react";
 
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { PageLayout } from "./components/page-layout";
-import { SettingsProvider, useSettings } from "./lib/settings-context";
-import { siteConfig } from "./lib/site-config";
-import { SearchModal } from "./components/search";
-import { PagesProvider, usePages } from "./pages/landing/pages-context";
-
-/**
- * Navigation entries for routes the framework owns rather than the page registry.
- *
- * Carried here with explicit `order` values so the whole navigation is sorted by one
- * key. Registry pages currently hold 1 to 4, so these two land after them — but a new
- * registry page with `nav.order: 7` would sort last rather than being forced in front,
- * which a "registry first, then framework" rule would have done.
- */
-const FRAMEWORK_NAV = [
-  { label: "Blog Posts", to: "/posts", order: 5 },
-  { label: "Knowledge Base", to: "/knowledge-base", order: 6 },
-];
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import activeTheme from "@theme";
+import { SettingsProvider } from "./core/settings-context";
+import { PagesProvider } from "./pages/landing/pages-context";
+import { guideRoutePattern } from "./core/navigation";
+import { AppShell } from "./core/pages/app-shell";
 
 // Lazy-loaded route components — each becomes its own chunk
 const HomePage = lazy(() =>
-  import("./pages/home/home-page").then((m) => ({ default: m.HomePage }))
+  import("./core/pages/home-route").then((m) => ({ default: m.HomeRoute }))
 );
 const PostsPage = lazy(() =>
-  import("./pages/posts/posts-page").then((m) => ({ default: m.PostsPage }))
+  import("./core/pages/posts-route").then((m) => ({ default: m.PostsRoute }))
 );
 const KnowledgeBasePage = lazy(() =>
-  import("./pages/knowledge-base/knowledge-base-page").then((m) => ({
-    default: m.KnowledgeBasePage,
-  }))
+  import("./core/pages/knowledge-base-route").then((m) => ({ default: m.KnowledgeBaseRoute }))
 );
 
 // Landing pages live as runtime content now (landing-page-editor). The catch-all resolver
@@ -48,13 +26,13 @@ const LandingOrContent = lazy(() =>
 );
 
 const ContentPage = lazy(() =>
-  import("./components/content-renderer").then((m) => ({ default: m.ContentPage }))
+  import("./core/pages/article-route").then((m) => ({ default: m.ContentPage }))
 );
 const CategoriesPage = lazy(() =>
-  import("./pages/categories/categories-page").then((m) => ({ default: m.CategoriesPage }))
+  import("./core/pages/taxonomy-route").then((m) => ({ default: m.CategoriesRoute }))
 );
 const TagsPage = lazy(() =>
-  import("./pages/tags/tags-page").then((m) => ({ default: m.TagsPage }))
+  import("./core/pages/taxonomy-route").then((m) => ({ default: m.TagsRoute }))
 );
 
 import { TagRedirect } from "./components/tag-redirect";
@@ -65,243 +43,64 @@ declare global {
   }
 }
 
+const { PageFrame, Loading } = activeTheme;
+
 function AppContent() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { navEntries } = usePages();
-  const { theme, density, analyticsOptOut, setTheme, setDensity, setAnalyticsOptOut } =
-    useSettings();
-
-  // Track SPA page views in Google Analytics, unless the visitor opted out.
-  // (The GA opt-out flag also suppresses collection at the gtag level; this
-  // avoids queueing the event at all.)
-  useEffect(() => {
-    if (analyticsOptOut) return;
-    if (typeof window.gtag === "function") {
-      window.gtag("event", "page_view", { page_path: location.pathname + location.search });
-    }
-  }, [location, analyticsOptOut]);
-  const [cookiesVisible, setCookiesVisible] = useState(false);
-  const [searchVisible, setSearchVisible] = useState(false);
-
+  const guidePattern = guideRoutePattern();
   return (
-    <>
-      <TopNavigation
-        i18nStrings={{
-          overflowMenuTriggerText: "More",
-          overflowMenuTitleText: "All",
-        }}
-        identity={{
-          href: "/",
-          title: siteConfig.siteName,
-          onFollow: (e) => {
-            e.preventDefault();
-            navigate("/");
-          },
-        }}
-        utilities={[
-          // Navigation links, generated from the pages manifest (fetched at runtime) plus
-          // the framework's own routes, sorted by one `order` key. Until the manifest
-          // loads, navEntries is empty and only the framework links show; they appear
-          // once it resolves. Previously read from the compiled registry.
-          ...[
-            ...navEntries.map((p) => ({
-              label: p.nav!.label,
-              to: `/${p.slug}`,
-              order: p.nav!.order,
-            })),
-            ...FRAMEWORK_NAV,
-          ]
-            .sort((a, b) => a.order - b.order)
-            .map(({ label, to }) => ({
-              type: "button" as const,
-              text: label,
-              onClick: () => navigate(to),
-            })),
-          // The remaining utilities are behavioural, not navigational, so they are not
-          // derivable from the registry.
-          {
-            type: "button",
-            iconName: "search",
-            ariaLabel: "Search",
-            onClick: () => setSearchVisible(true),
-          },
-          {
-            type: "button",
-            iconName: "lock-private",
-            ariaLabel: "Cookies Policy",
-            onClick: () => setCookiesVisible(true),
-          },
-          {
-            type: "menu-dropdown",
-            iconName: "settings",
-            ariaLabel: "Settings",
-            title: "Settings",
-            items: [
-              {
-                id: "theme",
-                text: "Theme",
-                items: [
-                  {
-                    id: "theme-light",
-                    text: "Light",
-                    itemType: "checkbox",
-                    checked: theme === "light",
-                  },
-                  {
-                    id: "theme-dark",
-                    text: "Dark",
-                    itemType: "checkbox",
-                    checked: theme === "dark",
-                  },
-                  {
-                    id: "theme-system",
-                    text: "System",
-                    itemType: "checkbox",
-                    checked: theme === "system",
-                  },
-                ],
-              },
-              {
-                id: "density",
-                text: "Density",
-                items: [
-                  {
-                    id: "density-comfortable",
-                    text: "Comfortable",
-                    itemType: "checkbox",
-                    checked: density === "comfortable",
-                  },
-                  {
-                    id: "density-compact",
-                    text: "Compact",
-                    itemType: "checkbox",
-                    checked: density === "compact",
-                  },
-                ],
-              },
-              {
-                id: "privacy",
-                text: "Privacy",
-                items: [
-                  {
-                    id: "analytics-opt-out",
-                    text: "Don't track my visits",
-                    itemType: "checkbox",
-                    checked: analyticsOptOut,
-                  },
-                ],
-              },
-            ],
-            onItemClick: ({ detail }) => {
-              switch (detail.id) {
-                case "theme-light":
-                  setTheme("light");
-                  break;
-                case "theme-dark":
-                  setTheme("dark");
-                  break;
-                case "theme-system":
-                  setTheme("system");
-                  break;
-                case "density-comfortable":
-                  setDensity("comfortable");
-                  break;
-                case "density-compact":
-                  setDensity("compact");
-                  break;
-                case "analytics-opt-out":
-                  setAnalyticsOptOut(!analyticsOptOut);
-                  break;
-              }
-            },
-          },
-        ]}
-      />
-      <Modal
-        visible={cookiesVisible}
-        onDismiss={() => setCookiesVisible(false)}
-        header="Cookies Policy"
-        closeAriaLabel="Close"
-        footer={
-          <Box float="right">
-            <Button variant="primary" onClick={() => setCookiesVisible(false)}>
-              Close
-            </Button>
-          </Box>
-        }
-      >
-        <SpaceBetween size="m">
-          <Box variant="p">
-            This site uses cookies - small text files that are placed on your machine to help the
-            site provide a better user experience. In general, cookies are used to retain user
-            preferences, store information for things like shopping carts, and provide anonymised
-            tracking data to third party applications like Google Analytics. As a rule, cookies will
-            make your browsing experience better. However, you may prefer to disable cookies on this
-            site and on others. The most effective way to do this is to disable cookies in your
-            browser. We suggest consulting the Help section of your browser or taking a look at the
-            About Cookies website which offers guidance for all modern browsers
-          </Box>
-        </SpaceBetween>
-      </Modal>
-      <SearchModal visible={searchVisible} onDismiss={() => setSearchVisible(false)} />
+    <AppShell>
       <Suspense
         fallback={
-          <PageLayout>
-            <Spinner size="large" />
-          </PageLayout>
+          <PageFrame>
+            <Loading />
+          </PageFrame>
         }
       >
         <Routes>
           <Route
             path="/"
             element={
-              <PageLayout>
+              <PageFrame>
                 <HomePage />
-              </PageLayout>
+              </PageFrame>
             }
           />
           <Route
             path="/posts"
             element={
-              <PageLayout>
+              <PageFrame>
                 <PostsPage />
-              </PageLayout>
+              </PageFrame>
             }
           />
           <Route
             path="/knowledge-base"
             element={
-              <PageLayout>
+              <PageFrame>
                 <KnowledgeBasePage />
-              </PageLayout>
+              </PageFrame>
             }
           />
           <Route path="/knowledge-base/:slug" element={<ContentPage basePath="knowledge-base" />} />
           <Route
             path="/categories"
             element={
-              <PageLayout>
+              <PageFrame>
                 <CategoriesPage />
-              </PageLayout>
+              </PageFrame>
             }
           />
           <Route path="/categories/:name" element={<TagRedirect />} />
           <Route
             path="/tags"
             element={
-              <PageLayout>
+              <PageFrame>
                 <TagsPage />
-              </PageLayout>
+              </PageFrame>
             }
           />
           <Route path="/tags/:name" element={<TagRedirect />} />
-          {siteConfig.guideSection && (
-            <Route
-              path={`/${siteConfig.guideSection.path}/:slug`}
-              element={<ContentPage basePath="pages" />}
-            />
-          )}
+          {guidePattern && <Route path={guidePattern} element={<ContentPage basePath="pages" />} />}
           {/*
             Catch-all resolver. A path that matches no explicit route above is either a
             landing page (slug in the runtime pages manifest) or a post; LandingOrContent
@@ -314,14 +113,14 @@ function AppContent() {
           <Route
             path="*"
             element={
-              <PageLayout>
+              <PageFrame>
                 <LandingOrContent />
-              </PageLayout>
+              </PageFrame>
             }
           />
         </Routes>
       </Suspense>
-    </>
+    </AppShell>
   );
 }
 

@@ -1,0 +1,64 @@
+/*
+ * Syntax highlighting colors for highlight.js token classes, as produced by lowlight in
+ * code-block.tsx. Plain CSS rather than utilities because the class names come from the
+ * highlighter, not from this theme's markup. Roughly GitHub's light and dark palettes,
+ * chosen for contrast against the code block backgrounds.
+ */
+.hl {
+  --hl-comment: #57606a;
+  --hl-keyword: #cf222e;
+  --hl-string: #0a3069;
+  --hl-number: #0550ae;
+  --hl-title: #8250df;
+  --hl-attr: #116329;
+  --hl-meta: #953800;
+}
+.dark .hl {
+  --hl-comment: #8b949e;
+  --hl-keyword: #ff7b72;
+  --hl-string: #a5d6ff;
+  --hl-number: #79c0ff;
+  --hl-title: #d2a8ff;
+  --hl-attr: #7ee787;
+  --hl-meta: #ffa657;
+}
+.hl .hljs-comment,
+.hl .hljs-quote {
+  color: var(--hl-comment);
+  font-style: italic;
+}
+.hl .hljs-keyword,
+.hl .hljs-selector-tag,
+.hl .hljs-built_in,
+.hl .hljs-type,
+.hl .hljs-literal {
+  color: var(--hl-keyword);
+}
+.hl .hljs-string,
+.hl .hljs-regexp,
+.hl .hljs-template-string {
+  color: var(--hl-string);
+}
+.hl .hljs-number,
+.hl .hljs-variable,
+.hl .hljs-template-variable {
+  color: var(--hl-number);
+}
+.hl .hljs-title,
+.hl .hljs-section,
+.hl .hljs-function .hljs-title {
+  color: var(--hl-title);
+}
+.hl .hljs-attr,
+.hl .hljs-attribute,
+.hl .hljs-name,
+.hl .hljs-tag,
+.hl .hljs-selector-class,
+.hl .hljs-selector-id {
+  color: var(--hl-attr);
+}
+.hl .hljs-meta,
+.hl .hljs-symbol,
+.hl .hljs-bullet {
+  color: var(--hl-meta);
+}
